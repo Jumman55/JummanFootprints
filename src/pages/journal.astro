@@ -1,0 +1,57 @@
+---
+import Base from '../layouts/Base.astro';
+import { getLang } from '../i18n';
+
+const lang = getLang(Astro.url);
+const copy = {
+  en: {
+    title: 'Journal — Jumman', desc: 'Loose thoughts and field notes from the trail, the edit and the desk.',
+    eyebrow: 'Journal', h1: 'Loose thoughts & field notes.',
+    lede: 'Unpolished notes from the trail, the edit and the desk. Shorter than a lesson, more honest than a caption.',
+    notes: [
+      { date: '[DATE]', title: 'Why I travel to trailheads by public transport', excerpt: 'Trains and buses only. It shapes which mountains I can reach, and how the films start.', tag: 'travel' },
+      { date: '[DATE]', title: 'Homemade food on the trail', excerpt: '[A line or two about what you carry and why.]', tag: 'hiking' },
+      { date: '[DATE]', title: 'Choosing Fosen over Lofoten', excerpt: 'I wanted solitude and raw wilderness more than the famous views.', tag: 'norway' },
+      { date: '[DATE]', title: 'Living with one lens', excerpt: '[Notes on shooting a whole trip on a 20 mm.]', tag: 'cinematography' },
+    ],
+  },
+  bn: {
+    title: 'জার্নাল — জুম্মান', desc: 'ট্রেইল, এডিট আর টেবিল থেকে ছোট ভাবনা ও মাঠের নোট।',
+    eyebrow: 'জার্নাল', h1: 'এলোমেলো ভাবনা ও মাঠের নোট।',
+    lede: 'ট্রেইল, এডিট আর পড়ার টেবিল থেকে অগোছালো নোট। পাঠের চেয়ে ছোট, ক্যাপশনের চেয়ে সৎ।',
+    notes: [
+      { date: '[তারিখ]', title: 'কেন আমি পাবলিক ট্রান্সপোর্টে ট্রেইলহেডে যাই', excerpt: 'শুধু ট্রেন আর বাস। এটাই ঠিক করে দেয় কোন পাহাড়ে পৌঁছাতে পারব, আর ফিল্মগুলো কীভাবে শুরু হয়।', tag: 'ভ্রমণ' },
+      { date: '[তারিখ]', title: 'ট্রেইলে ঘরে রান্না করা খাবার', excerpt: '[কী নিয়ে যান আর কেন, এক-দুই লাইনে।]', tag: 'হাইকিং' },
+      { date: '[তারিখ]', title: 'লোফোটেন ছেড়ে কেন ফোসেন', excerpt: 'বিখ্যাত দৃশ্যের চেয়ে আমি বেশি চেয়েছিলাম নির্জনতা আর বুনো প্রকৃতি।', tag: 'নরওয়ে' },
+      { date: '[তারিখ]', title: 'এক লেন্সে বেঁচে থাকা', excerpt: '[পুরো যাত্রা ২০ মিমি লেন্সে শুট করার নোট।]', tag: 'সিনেমাটোগ্রাফি' },
+    ],
+  },
+}[lang];
+---
+<Base title={copy.title} active="journal" description={copy.desc}>
+  <div class="container-narrow page" style="gap: 48px">
+    <header class="stack" style="gap: 16px">
+      <div class="eyebrow">{copy.eyebrow}</div>
+      <h1 class="display" style="font-size: clamp(40px, 6.5vw, 80px)">{copy.h1}</h1>
+      <p class="lede">{copy.lede}</p>
+    </header>
+    <div class="stack">
+      {copy.notes.map((n) => (
+        <article class="note">
+          <span class="dim date">{n.date}</span>
+          <div class="stack" style="gap: 10px">
+            <h2 style="font-size: 24px; font-weight: 500; letter-spacing: -.015em; line-height: 1.3">{n.title}</h2>
+            <p class="muted" style="font-family: var(--font-serif); font-size: 19px; line-height: 1.65">{n.excerpt}</p>
+            <span class="dim" style="font-family: var(--font-mono); font-size: 12px">#{n.tag}</span>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</Base>
+
+<style>
+  .note { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 24px; padding: 28px 0; border-top: 1px solid var(--hairline); }
+  .date { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; padding-top: 6px; }
+  @media (max-width: 600px) { .note { grid-template-columns: 1fr; gap: 8px; } }
+</style>

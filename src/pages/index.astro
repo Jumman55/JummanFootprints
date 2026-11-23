@@ -1,0 +1,194 @@
+---
+import Base from '../layouts/Base.astro';
+import Media from '../components/Media.astro';
+import VideoCard from '../components/VideoCard.astro';
+import SocialIcon from '../components/SocialIcon.astro';
+import Newsletter from '../components/Newsletter.astro';
+import { site } from '../data/site';
+import { videos, ytThumb } from '../data/adventures';
+import { getLang, localize, fullDate } from '../i18n';
+
+const lang = getLang(Astro.url);
+const l = (p: string) => localize(p, lang);
+const hero = videos[0];
+const latest = videos.slice(1, 4);
+
+const copy = {
+  en: {
+    title: 'Jumman Footprints — cinematic adventures in Bangla',
+    location: 'Rome, Italy · roots in Bangladesh · 41.90° N 12.49° E',
+    lede1: 'Exploring the world, one step at a time. Cinematic adventure vlogs, narrated in',
+    chip: 'Bangla',
+    lede2: 'with English subtitles: solo hikes, mountain nights, historic places, and lessons on the craft and the maths behind it.',
+    watch: 'Watch the latest',
+    learn: 'Start learning',
+    also: 'Also on',
+    latestVlog: '● Latest vlog',
+    subBn: 'মন্টে তিনোর চূড়ায় এক রাত।',
+    subEn: 'A night on the summit of Monte Tino.',
+    latestAdv: 'Latest adventures',
+    allAdv: 'All adventures →',
+    learnWith: 'Learn with me',
+    allLessons: 'All lessons →',
+    cinema: 'Cinematography',
+    math: 'Math & Physics',
+    c1: 'Framing: the rule of thirds, and when to break it',
+    c2: 'What a 20 mm lens does to a landscape',
+    c3: 'From S-Log3 to a film look in DaVinci Resolve',
+    m1a: 'Why ', m1b: ' is in every circle',
+    m2: 'Complex numbers, without fear',
+    m3: 'The Schrödinger equation, slowly',
+    now: 'Now · November 2026',
+    nowText: 'Writing a 2:40 short film about a boy who dreams of becoming Kakababu. Next trip: seven days solo on Fosen på langs, Norway.',
+    nowLink: "What I'm working on →",
+  },
+  bn: {
+    title: 'জুম্মান ফুটপ্রিন্টস — বাংলায় সিনেমাটিক অ্যাডভেঞ্চার',
+    location: 'রোম, ইতালি · শিকড় বাংলাদেশে · ৪১.৯০° উ ১২.৪৯° পূ',
+    lede1: 'বিশ্ব ঘোরাঘুরি, এক পায়ে এক গল্প।',
+    chip: 'বাংলায়',
+    lede2: 'বলা, ইংরেজি সাবটাইটেলসহ সিনেমাটিক অ্যাডভেঞ্চার ভ্লগ: একা হাইক, পাহাড়ের রাত, ঐতিহাসিক জায়গা, আর ক্যামেরা ও গণিতের পেছনের পাঠ।',
+    watch: 'সর্বশেষ ভিডিও দেখুন',
+    learn: 'শেখা শুরু করুন',
+    also: 'আরও পাবেন',
+    latestVlog: '● সর্বশেষ ভ্লগ',
+    subBn: 'মন্টে তিনোর চূড়ায় এক রাত।',
+    subEn: 'A night on the summit of Monte Tino.',
+    latestAdv: 'সাম্প্রতিক অভিযান',
+    allAdv: 'সব অভিযান →',
+    learnWith: 'আমার সাথে শিখুন',
+    allLessons: 'সব পাঠ →',
+    cinema: 'সিনেমাটোগ্রাফি',
+    math: 'গণিত ও পদার্থবিজ্ঞান',
+    c1: 'ফ্রেমিং: রুল অব থার্ডস, আর কখন তা ভাঙবেন',
+    c2: '২০ মিমি লেন্স ল্যান্ডস্কেপে কী করে',
+    c3: 'S-Log3 থেকে ফিল্ম লুক, DaVinci Resolve-এ',
+    m1a: 'প্রতিটি বৃত্তে কেন ', m1b: ' থাকে',
+    m2: 'ভয় ছাড়াই জটিল সংখ্যা',
+    m3: 'শ্রোডিঙ্গার সমীকরণ, ধীরে ধীরে',
+    now: 'এখন · নভেম্বর ২০২৬',
+    nowText: 'একটা ২:৪০ মিনিটের শর্ট ফিল্ম লিখছি, এক ছেলেকে নিয়ে যে কাকাবাবু হওয়ার স্বপ্ন দেখে। পরের যাত্রা: নরওয়ের ফোসেন পো লাংস-এ একা সাত দিন।',
+    nowLink: 'এখন কী নিয়ে কাজ করছি →',
+  },
+}[lang];
+
+const socials = [
+  { name: 'youtube', label: 'YouTube', href: site.social.youtube },
+  { name: 'instagram', label: 'Instagram', href: site.social.instagram },
+  { name: 'facebook', label: 'Facebook', href: site.social.facebook },
+] as const;
+---
+<Base title={copy.title} active="home" image={ytThumb(hero.youtubeId)}>
+  {lang === 'en' && (
+    <script is:inline>
+      // Send returning visitors who chose Bangla straight to the Bangla home page.
+      try { if (localStorage.getItem('lang') === 'bn') location.replace('/bn/'); } catch (e) {}
+    </script>
+  )}
+  <section class="container hero">
+    <div class="eyebrow">{copy.location}</div>
+    <h1 class="dot-display hero-title">{site.name}</h1>
+    <p class="hero-lede">{copy.lede1} <span class="bangla-chip">{copy.chip}</span> {copy.lede2}</p>
+    <div class="hero-actions">
+      <a href={l(`/adventures/${hero.slug}/`)} class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor" /></svg>{copy.watch}
+      </a>
+      <a href={l('/learn/')} class="btn">{copy.learn}</a>
+      <div class="also">
+        <span class="eyebrow" style="margin-right: 6px">{copy.also}</span>
+        {socials.map((s) => (
+          <a href={s.href} aria-label={s.label} class="icon-btn" rel="noopener" target="_blank"><SocialIcon name={s.name} /></a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="container stack" style="gap: 20px; padding-bottom: 96px">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap">
+      <div class="eyebrow eyebrow-amber">{copy.latestVlog}</div>
+      <div class="meta">{hero.place[lang]}</div>
+    </div>
+    <a href={l(`/adventures/${hero.slug}/`)} class="hero-video">
+      <Media label={hero.title[lang]} ratio="2.39 / 1" play eager src={ytThumb(hero.youtubeId)} fallback={ytThumb(hero.youtubeId, 'hqdefault')} alt="" />
+      <div class="subs">
+        <div class="subs-bn" lang="bn">{copy.subBn}</div>
+        <div class="subs-en" lang="en">{copy.subEn}</div>
+      </div>
+    </a>
+    <div style="display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: flex-end">
+      <div class="stack" style="gap: 8px; max-width: 760px">
+        <h2 style="font-size: clamp(26px, 3.4vw, 40px); font-weight: 500; letter-spacing: -.02em; line-height: 1.15">{hero.title[lang]}</h2>
+        <div class="muted" style="font-size: 16px">{fullDate(hero.date, lang)} · {hero.place[lang]}</div>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        {socials.map((s) => <a href={s.href} class="pill" rel="noopener" target="_blank">{s.label}</a>)}
+      </div>
+    </div>
+  </section>
+
+  <section class="container stack" style="gap: 28px; padding-bottom: 96px">
+    <div class="section-head">
+      <h2 class="h-section">{copy.latestAdv}</h2>
+      <a href={l('/adventures/')}>{copy.allAdv}</a>
+    </div>
+    <div class="grid-auto">
+      {latest.map((v) => <VideoCard video={v} ratio="3 / 2" />)}
+    </div>
+  </section>
+
+  <section class="container stack" style="gap: 28px; padding-bottom: 96px">
+    <div class="section-head">
+      <h2 class="h-section">{copy.learnWith}</h2>
+      <a href={l('/learn/')}>{copy.allLessons}</a>
+    </div>
+    <div class="grid-fit">
+      <div class="panel lesson-box">
+        <div class="eyebrow eyebrow-amber" style="margin-bottom: 10px">{copy.cinema}</div>
+        <div class="row-list">
+          <a href={l('/learn/cinematography/')} class="lesson-row">{copy.c1}<span aria-hidden="true">→</span></a>
+          <a href={l('/learn/cinematography/')} class="lesson-row">{copy.c2}<span aria-hidden="true">→</span></a>
+          <a href={l('/learn/cinematography/')} class="lesson-row">{copy.c3}<span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <div class="panel lesson-box">
+        <div class="eyebrow eyebrow-amber" style="margin-bottom: 10px">{copy.math}</div>
+        <div class="row-list">
+          <a href={l('/learn/math-physics/')} class="lesson-row"><span>{copy.m1a}<span class="serif-i" style="font-size: 1.15em">π</span>{copy.m1b}</span><span aria-hidden="true">→</span></a>
+          <a href={l('/learn/math-physics/')} class="lesson-row">{copy.m2}<span aria-hidden="true">→</span></a>
+          <a href={l('/learn/schrodinger-equation/')} class="lesson-row">{copy.m3}<span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container" style="padding-bottom: 96px">
+    <a href={l('/now/')} class="outline now-strip">
+      <div class="stack" style="gap: 10px; flex: 1 1 520px">
+        <div class="eyebrow"><span class="amber">●</span> {copy.now}</div>
+        <div style="font-size: 20px; line-height: 1.55">{copy.nowText}</div>
+      </div>
+      <span class="muted" style="font-size: 15px">{copy.nowLink}</span>
+    </a>
+  </section>
+
+  <Newsletter />
+</Base>
+
+<style>
+  .hero { padding-top: 96px; padding-bottom: 64px; display: flex; flex-direction: column; gap: 28px; }
+  .hero-title { font-size: clamp(64px, 11vw, 152px); }
+  .hero-lede { max-width: 780px; font-size: clamp(19px, 2.2vw, 24px); line-height: 1.55; color: var(--muted); }
+  .bangla-chip { display: inline-block; background: var(--amber); color: var(--on-amber); font-family: var(--font-mono); font-size: .78em; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 2px 10px; border-radius: 4px; vertical-align: 2px; }
+  :global(html[lang='bn']) .bangla-chip { letter-spacing: 0; font-size: .85em; }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .also { display: flex; gap: 6px; align-items: center; margin-left: 8px; flex-wrap: wrap; }
+  .hero-video { display: block; position: relative; border-radius: 16px; overflow: hidden; }
+  .hero-video::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.55), transparent 45%); pointer-events: none; }
+  .hero-video .subs { z-index: 2; }
+  .lesson-box { padding: 28px; display: flex; flex-direction: column; gap: 6px; }
+  .lesson-row { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; font-size: 18px; }
+  .lesson-row > span[aria-hidden] { color: var(--dim); }
+  .now-strip { display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; align-items: center; padding: 28px; color: var(--text); }
+  .now-strip:hover { border-color: rgba(242, 178, 62, .4); color: var(--text); }
+  @media (max-width: 600px) { .hero { padding-top: 56px; } .also { margin-left: 0; } }
+</style>

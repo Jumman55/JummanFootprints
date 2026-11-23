@@ -1,0 +1,130 @@
+---
+import Base from '../../layouts/Base.astro';
+import Media from '../../components/Media.astro';
+import { site } from '../../data/site';
+import { videos, drakensberg, filterTags, ytThumb } from '../../data/adventures';
+import { getLang, localize, monthYear, digits, ui } from '../../i18n';
+
+const lang = getLang(Astro.url);
+const t = ui[lang];
+const copy = {
+  en: {
+    title: 'Adventures — Jumman',
+    desc: 'Every trip, every film: solo hikes, mountain nights and historic cities across Italy.',
+    eyebrow: 'Adventures · newest first',
+    h1: 'Every trip, every film.',
+    lede: 'Solo hikes and nights on mountain peaks, medieval cities and hidden waterfalls, from the hills around Rome to the summits of Abruzzo. Each one with the film and the notes behind it.',
+    filter: 'Filter by tag',
+    count: (n: number) => `${n} ${n === 1 ? 'adventure' : 'adventures'}`,
+    cta: 'Watch & read →',
+    read: 'Read the story →',
+    more: 'More on the channel: shorts, trailers and behind the scenes.',
+    sub: 'Subscribe on YouTube',
+  },
+  bn: {
+    title: 'অভিযান — জুম্মান',
+    desc: 'প্রতিটি যাত্রা, প্রতিটি ফিল্ম: ইতালিজুড়ে একা হাইক, পাহাড়ের রাত আর ঐতিহাসিক শহর।',
+    eyebrow: 'অভিযান · নতুন থেকে পুরোনো',
+    h1: 'প্রতিটি যাত্রা, প্রতিটি ফিল্ম।',
+    lede: 'একা হাইক আর পাহাড়চূড়ায় রাত, মধ্যযুগীয় শহর আর লুকানো ঝরনা, রোমের আশপাশের পাহাড় থেকে আব্রুৎসোর চূড়া পর্যন্ত। প্রতিটির সাথে ফিল্ম আর তার পেছনের গল্প।',
+    filter: 'ট্যাগ দিয়ে বাছাই করুন',
+    count: (n: number) => `${digits(n, 'bn')}টি অভিযান`,
+    cta: 'দেখুন ও পড়ুন →',
+    read: 'গল্পটা পড়ুন →',
+    more: 'চ্যানেলে আরও আছে: শর্টস, ট্রেইলার আর পর্দার পেছনের গল্প।',
+    sub: 'YouTube-এ সাবস্ক্রাইব করুন',
+  },
+}[lang];
+const total = videos.length + 1;
+---
+<Base title={copy.title} active="adventures" description={copy.desc}>
+  <div class="container page" style="gap: 40px">
+    <header class="stack" style="gap: 16px">
+      <div class="eyebrow">{copy.eyebrow}</div>
+      <h1 class="display">{copy.h1}</h1>
+      <p class="lede" style="max-width: 680px">{copy.lede}</p>
+    </header>
+
+    <div role="group" aria-label={copy.filter} class="filters">
+      {filterTags.map((tag) => (
+        <button type="button" class="filter" data-tag={tag} aria-pressed={tag === 'all' ? 'true' : 'false'}>{t.tags[tag]}</button>
+      ))}
+      <span class="count" aria-live="polite" data-count data-one={copy.count(1)} data-many={copy.count(2)}>{copy.count(total)}</span>
+    </div>
+
+    <div class="stack" style="gap: 28px">
+      {videos.map((v) => (
+        <a href={localize(`/adventures/${v.slug}/`, lang)} class="row panel" data-tags={v.tags.join(' ')}>
+          <div class="row-media">
+            <Media label={v.title[lang]} play radius="0px" src={ytThumb(v.youtubeId)} fallback={ytThumb(v.youtubeId, 'hqdefault')} alt="" />
+            <span class="dur">{v.duration}</span>
+          </div>
+          <div class="row-body">
+            <div class="meta">{monthYear(v.date, lang)} · {v.place[lang]}</div>
+            <h2 class="row-title">{v.title[lang]}</h2>
+            <p class="muted summary">{v.summary[lang]}</p>
+            <div class="tags">{v.tags.map((tag) => <span class="tag">{t.tags[tag]}</span>)}</div>
+            <span class="amber" style="font-size: 15px; margin-top: 6px">{copy.cta}</span>
+          </div>
+        </a>
+      ))}
+      <a href={localize(`/adventures/${drakensberg.slug}/`, lang)} class="row panel" data-tags={drakensberg.tags.join(' ')}>
+        <div class="row-media"><Media label={drakensberg.title[lang]} radius="0px" /></div>
+        <div class="row-body">
+          <div class="meta">{monthYear(drakensberg.date, lang)} · {drakensberg.place[lang]}</div>
+          <h2 class="row-title">{drakensberg.title[lang]}</h2>
+          <div class="tags">{drakensberg.tags.map((tag) => <span class="tag">{t.tags[tag]}</span>)}</div>
+          <span class="amber" style="font-size: 15px; margin-top: 6px">{copy.read}</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="outline more">
+      <p style="font-size: 18px; line-height: 1.5">{copy.more}</p>
+      <a href={site.youtubeSubscribe} class="btn btn-primary" rel="noopener" target="_blank">{copy.sub}</a>
+    </div>
+  </div>
+</Base>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.filter');
+  const rows = document.querySelectorAll<HTMLElement>('[data-tags]');
+  const count = document.querySelector<HTMLElement>('[data-count]');
+  buttons.forEach((btn) =>
+    btn.addEventListener('click', () => {
+      const tag = btn.dataset.tag!;
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      let n = 0;
+      rows.forEach((r) => {
+        const show = tag === 'all' || r.dataset.tags!.split(' ').includes(tag);
+        r.hidden = !show;
+        if (show) n++;
+      });
+      if (count) {
+        const tpl = n === 1 ? count.dataset.one! : count.dataset.many!;
+        const bn = document.documentElement.lang === 'bn';
+        const num = bn ? String(n).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[+d]) : String(n);
+        count.textContent = tpl.replace(/[\d০-৯]+/, num);
+      }
+    })
+  );
+</script>
+
+<style>
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); padding: 16px 0; }
+  .filter { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: transparent; color: var(--muted); font-family: var(--font-mono); font-size: 13px; cursor: pointer; }
+  .filter:hover { color: var(--text); border-color: rgba(255,255,255,.3); }
+  .filter[aria-pressed='true'] { border-color: var(--amber); background: var(--amber); color: var(--on-amber); }
+  .count { margin-left: auto; align-self: center; font-family: var(--font-mono); font-size: 12px; color: var(--dim); }
+  .row { display: flex; flex-wrap: wrap; border-radius: 22px; overflow: hidden; color: var(--text); }
+  .row[hidden] { display: none; }
+  .row:hover { color: var(--text); border-color: rgba(242,178,62,.35); }
+  .row:hover .row-title { color: var(--amber); }
+  .row-media { flex: 1 1 520px; min-width: 0; position: relative; }
+  .dur { position: absolute; right: 14px; bottom: 14px; z-index: 2; font-family: var(--font-mono); font-size: 12px; background: rgba(0,0,0,.75); color: #fff; padding: 2px 8px; border-radius: 6px; }
+  .row-body { flex: 1 1 340px; min-width: 0; padding: 32px; display: flex; flex-direction: column; gap: 14px; justify-content: center; }
+  .row-title { font-size: clamp(24px, 2.6vw, 30px); font-weight: 500; letter-spacing: -.02em; line-height: 1.2; transition: color .15s; }
+  .summary { font-size: 16px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .more { padding: 28px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; }
+  @media (max-width: 600px) { .row-body { padding: 24px; } .count { margin-left: 0; flex-basis: 100%; } }
+</style>

@@ -1,0 +1,115 @@
+---
+import Base from '../layouts/Base.astro';
+import Media from '../components/Media.astro';
+import { getLang, localize, digits } from '../i18n';
+
+const lang = getLang(Astro.url);
+const copy = {
+  en: {
+    title: 'Now — Jumman',
+    desc: 'What Jumman is working on this month.',
+    updated: 'Updated 23 November 2026',
+    lede: "What I'm working on this month. Updated once a month, so you always know what's coming before it reaches any platform.",
+    film: 'Short film',
+    filmBig: 'A boy who dreams of becoming Kakababu meets his own double at his study table.',
+    filmSmall: 'Told mostly visually, with only core dialogue in Bangla. The script draft is written; the storyboard is next.',
+    stages: ['Idea', 'Script', 'Storyboard', 'Shoot', 'Edit'],
+    progress: (a: number, b: number) => `Progress: stage ${a} of ${b}`,
+    trip: 'Next trip',
+    country: 'Norway',
+    map: 'Fosen, Trøndelag · route map or recce photo',
+    tripBig: 'Seven days solo on Fosen på langs.',
+    tripSmall: 'About 90 km through Trøndelag, starting with the ferry from Trondheim to Vanvikan, wild camping each night. Chosen over Lofoten and Jotunheimen for the solitude.',
+    learning: 'Learning',
+    learn: ['The Schrödinger equation, from first principles', 'Cinematography: shot by shot, with DaVinci Resolve', 'Building AI agents'],
+    building: 'Building',
+    buildBig: 'This website.',
+    buildSmall: "Version 1: one home for my films, lessons and notes, now in English and Bangla. Next: one-click backup of everything I've posted.",
+    past: 'Past months live in the Journal →',
+  },
+  bn: {
+    title: 'এখন — জুম্মান',
+    desc: 'জুম্মান এই মাসে কী নিয়ে কাজ করছে।',
+    updated: 'হালনাগাদ ২৩ নভেম্বর ২০২৬',
+    lede: 'এই মাসে আমি কী নিয়ে কাজ করছি। মাসে একবার হালনাগাদ হয়, তাই কোনো প্ল্যাটফর্মে আসার আগেই আপনি জানবেন সামনে কী আসছে।',
+    film: 'শর্ট ফিল্ম',
+    filmBig: 'কাকাবাবু হওয়ার স্বপ্ন দেখা এক ছেলে তার পড়ার টেবিলে নিজের প্রতিরূপের মুখোমুখি হয়।',
+    filmSmall: 'গল্পটা বলা হবে মূলত দৃশ্যে, শুধু মূল সংলাপগুলো বাংলায়। স্ক্রিপ্টের খসড়া লেখা শেষ; এরপর স্টোরিবোর্ড।',
+    stages: ['ভাবনা', 'স্ক্রিপ্ট', 'স্টোরিবোর্ড', 'শুটিং', 'এডিট'],
+    progress: (a: number, b: number) => `অগ্রগতি: ${digits(b, 'bn')}টি ধাপের মধ্যে ${digits(a, 'bn')} নম্বর`,
+    trip: 'পরের যাত্রা',
+    country: 'নরওয়ে',
+    map: 'ফোসেন, ট্রনডেলাগ · পথের মানচিত্র বা রেকি ছবি',
+    tripBig: 'ফোসেন পো লাংস-এ একা সাত দিন।',
+    tripSmall: 'ট্রনডেলাগের ভেতর দিয়ে প্রায় ৯০ কিলোমিটার, শুরু ট্রনহেইম থেকে ভানভিকান ফেরি দিয়ে, প্রতি রাতে বুনো ক্যাম্পিং। নির্জনতার জন্য লোফোটেন আর ইয়োটুনহেইমেনের বদলে এটাই বেছে নিয়েছি।',
+    learning: 'শিখছি',
+    learn: ['শ্রোডিঙ্গার সমীকরণ, একেবারে গোড়া থেকে', 'সিনেমাটোগ্রাফি: শট ধরে ধরে, DaVinci Resolve-এ', 'AI এজেন্ট বানানো'],
+    building: 'বানাচ্ছি',
+    buildBig: 'এই ওয়েবসাইট।',
+    buildSmall: 'ভার্সন ১: আমার ফিল্ম, পাঠ আর নোটের এক ঠিকানা, এখন ইংরেজি আর বাংলায়। এরপর: যা কিছু পোস্ট করেছি, এক ক্লিকে তার ব্যাকআপ।',
+    past: 'আগের মাসগুলো জার্নালে আছে →',
+  },
+}[lang];
+const current = 2; // 0-based index of the stage in progress
+---
+<Base title={copy.title} active="now" description={copy.desc}>
+  <div class="container page" style="gap: 48px">
+    <header class="stack" style="gap: 16px; max-width: 760px">
+      <div class="eyebrow"><span class="amber">●</span> {copy.updated}</div>
+      <h1 class="dot-display" style="font-size: clamp(56px, 9vw, 120px)">NOW</h1>
+      <p class="lede">{copy.lede}</p>
+    </header>
+
+    <div class="grid-fit">
+      <section class="panel card">
+        <div class="card-head"><h2 class="label">{copy.film}</h2><span class="dim mono">{digits('2:40', lang)}</span></div>
+        <p class="big">{copy.filmBig}</p>
+        <p class="small">{copy.filmSmall}</p>
+        <div class="stack" style="gap: 8px; margin-top: 8px">
+          <div class="dim mono">
+            {copy.stages.map((s, i) => <>{i > 0 && ' · '}<span style={i === current ? 'color: var(--text)' : undefined}>{s}</span></>)}
+          </div>
+          <div role="img" aria-label={copy.progress(current + 1, copy.stages.length)} class="progress">
+            {copy.stages.map((_, i) => <span style={`background: ${i < current ? '#F2B23E' : i === current ? '#7A5A20' : '#2A2724'}`}></span>)}
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" style="overflow: hidden; display: flex; flex-direction: column">
+        <Media label={copy.map} ratio="2.39 / 1" radius="0px" />
+        <div class="stack" style="padding: 28px 32px 32px; gap: 14px">
+          <div class="card-head"><h2 class="label">{copy.trip}</h2><span class="dim mono">{copy.country}</span></div>
+          <p class="big">{copy.tripBig}</p>
+          <p class="small">{copy.tripSmall}</p>
+        </div>
+      </section>
+
+      <section class="outline card">
+        <h2 class="label">{copy.learning}</h2>
+        <ul class="row-list" style="margin: 0; padding: 0; list-style: none">
+          {copy.learn.map((x) => <li class="li">{x}</li>)}
+        </ul>
+      </section>
+
+      <section class="outline card">
+        <h2 class="label">{copy.building}</h2>
+        <p class="big">{copy.buildBig}</p>
+        <p class="small">{copy.buildSmall}</p>
+      </section>
+    </div>
+
+    <a href={localize('/journal/', lang)} class="muted" style="align-self: flex-start; font-size: 15px; min-height: 44px; display: inline-flex; align-items: center">{copy.past}</a>
+  </div>
+</Base>
+
+<style>
+  .card { padding: 32px; display: flex; flex-direction: column; gap: 14px; }
+  .card-head { display: flex; justify-content: space-between; gap: 12px; }
+  .mono { font-family: var(--font-mono); font-size: 12px; }
+  :global(html[lang='bn']) .mono { font-size: 13px; }
+  .big { font-size: 24px; line-height: 1.4; letter-spacing: -.01em; }
+  .small { font-size: 16px; line-height: 1.65; color: var(--muted); }
+  .progress { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+  .progress span { height: 6px; border-radius: 3px; }
+  .li { padding: 12px 0; font-size: 17px; }
+</style>

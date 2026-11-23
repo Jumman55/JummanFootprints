@@ -1,0 +1,173 @@
+---
+import Base from '../../layouts/Base.astro';
+import Media from '../../components/Media.astro';
+import { getLang, localize } from '../../i18n';
+
+const lang = getLang(Astro.url);
+const l = (p: string) => localize(p, lang);
+// Paragraph strings may contain <i>/<em> for maths symbols; they are rendered with set:html.
+const copy = {
+  en: {
+    title: 'The Schrödinger equation, slowly — Jumman',
+    desc: 'One line of maths that tells you how the quantum world changes in time, taken apart piece by piece.',
+    onPage: 'On this page',
+    toc: ['The big idea', 'The equation', 'Term by term', 'What ψ means'],
+    back: '← Math & Physics · Stage 04',
+    h1: 'The Schrödinger equation, slowly',
+    standfirst: "One line of maths that tells you how the quantum world changes in time. Let's take it apart piece by piece.",
+    meta: ['PHYSICS', '[DATE]', '#quantum'],
+    idea: "In everyday physics, Newton's law <i>F</i> = <i>ma</i> tells you how a ball's position changes. In quantum mechanics a particle doesn't have one sharp position. Instead it is described by a <em>wave function</em>, written <i>ψ</i>(<i>x</i>, <i>t</i>), and the Schrödinger equation tells you how that wave changes over time.",
+    eqIntro: 'For one particle moving along a line, with potential energy <i>V</i>(<i>x</i>):',
+    keyLabel: 'Key constant',
+    key: '<i>ħ</i> = <i>h</i>/2π ≈ 1.055 × 10⁻³⁴ J·s, the reduced Planck constant. It is tiny, which is why we don\'t notice quantum effects in daily life.',
+    terms: [
+      '<i>iħ</i> ∂<i>ψ</i>/∂<i>t</i>: how fast the wave function is changing in time.',
+      '−(<i>ħ</i>²/2<i>m</i>) ∂²<i>ψ</i>/∂<i>x</i>²: the kinetic energy. The more sharply the wave curves, the more kinetic energy it carries.',
+      '<i>V</i>(<i>x</i>)<i>ψ</i>: the potential energy, like a valley the particle sits in.',
+    ],
+    fig: 'Diagram · particle in a box, first three standing waves',
+    figCap: 'Fig. 1 · In a box, only certain waves fit. That\'s where "quantised" energy levels come from.',
+    prob: "The wave function itself isn't something you can measure. Its squared size, |<i>ψ</i>|², gives the probability of finding the particle near a point <i>x</i>. Because the particle has to be somewhere, all those probabilities add up to one:",
+    prev: '← PREVIOUS', prevT: 'Interference and the double slit',
+    next: 'NEXT →', nextT: 'What the uncertainty principle actually says',
+  },
+  bn: {
+    title: 'শ্রোডিঙ্গার সমীকরণ, ধীরে ধীরে — জুম্মান',
+    desc: 'গণিতের একটি লাইন, যা বলে দেয় কোয়ান্টাম জগৎ সময়ের সাথে কীভাবে বদলায়, টুকরো টুকরো করে বোঝানো।',
+    onPage: 'এই পাতায়',
+    toc: ['মূল ধারণা', 'সমীকরণটি', 'প্রতিটি পদ', 'ψ মানে কী'],
+    back: '← গণিত ও পদার্থবিজ্ঞান · ধাপ ০৪',
+    h1: 'শ্রোডিঙ্গার সমীকরণ, ধীরে ধীরে',
+    standfirst: 'গণিতের একটি লাইন, যা বলে দেয় কোয়ান্টাম জগৎ সময়ের সাথে কীভাবে বদলায়। চলুন একে টুকরো টুকরো করে খুলে দেখি।',
+    meta: ['পদার্থবিজ্ঞান', '[তারিখ]', '#কোয়ান্টাম'],
+    idea: 'দৈনন্দিন পদার্থবিজ্ঞানে নিউটনের সূত্র <i>F</i> = <i>ma</i> বলে দেয় একটা বলের অবস্থান কীভাবে বদলায়। কিন্তু কোয়ান্টাম মেকানিক্সে একটি কণার একটি নির্দিষ্ট অবস্থান থাকে না। তার বদলে কণাটিকে বর্ণনা করা হয় একটি <em>তরঙ্গ ফাংশন</em> দিয়ে, যাকে লেখা হয় <i>ψ</i>(<i>x</i>, <i>t</i>), আর শ্রোডিঙ্গার সমীকরণ বলে দেয় সেই তরঙ্গ সময়ের সাথে কীভাবে বদলায়।',
+    eqIntro: 'একটি সরলরেখা বরাবর চলা একটি কণার জন্য, যার স্থিতিশক্তি <i>V</i>(<i>x</i>):',
+    keyLabel: 'মূল ধ্রুবক',
+    key: '<i>ħ</i> = <i>h</i>/2π ≈ 1.055 × 10⁻³⁴ J·s, হ্রাসকৃত প্ল্যাঙ্ক ধ্রুবক। এটা এতই ক্ষুদ্র যে দৈনন্দিন জীবনে আমরা কোয়ান্টাম প্রভাব টের পাই না।',
+    terms: [
+      '<i>iħ</i> ∂<i>ψ</i>/∂<i>t</i>: তরঙ্গ ফাংশন সময়ের সাথে কত দ্রুত বদলাচ্ছে।',
+      '−(<i>ħ</i>²/2<i>m</i>) ∂²<i>ψ</i>/∂<i>x</i>²: গতিশক্তি। তরঙ্গ যত তীক্ষ্ণভাবে বাঁকে, তার গতিশক্তি তত বেশি।',
+      '<i>V</i>(<i>x</i>)<i>ψ</i>: স্থিতিশক্তি, যেন একটা উপত্যকা, যার মধ্যে কণাটি বসে আছে।',
+    ],
+    fig: 'চিত্র · বাক্সে আটকানো কণা, প্রথম তিনটি স্থির তরঙ্গ',
+    figCap: 'চিত্র ১ · বাক্সের ভেতরে কেবল নির্দিষ্ট কিছু তরঙ্গই আঁটে। "কোয়ান্টায়িত" শক্তিস্তর আসে সেখান থেকেই।',
+    prob: 'তরঙ্গ ফাংশন নিজে এমন কিছু নয় যা মাপা যায়। তার মানের বর্গ, |<i>ψ</i>|², বলে দেয় কোনো বিন্দু <i>x</i>-এর কাছে কণাটিকে পাওয়ার সম্ভাবনা কত। কণাটিকে যেহেতু কোথাও না কোথাও থাকতেই হবে, সব সম্ভাবনা যোগ করলে হয় এক:',
+    prev: '← আগের পাঠ', prevT: 'ব্যতিচার আর ডাবল স্লিট',
+    next: 'পরের পাঠ →', nextT: 'অনিশ্চয়তা নীতি আসলে কী বলে',
+  },
+}[lang];
+const ids = ['idea', 'equation', 'terms', 'probability'];
+---
+<Base title={copy.title} active="learn" description={copy.desc}>
+  <div class="container" style="padding-top: 56px; padding-bottom: 120px">
+    <article class="lesson">
+      <aside class="toc">
+        <div class="eyebrow" style="margin-bottom: 8px">{copy.onPage}</div>
+        {copy.toc.map((label, i) => <a href={`#${ids[i]}`} data-toc={ids[i]} class:list={{ on: i === 0 }}>{label}</a>)}
+      </aside>
+
+      <div class="col">
+        <header class="stack" style="gap: 18px; padding-bottom: 28px; border-bottom: 1px solid var(--hairline)">
+          <a href={l('/learn/math-physics/')} class="back-link">{copy.back}</a>
+          <h1 style="font-size: clamp(36px, 5.5vw, 60px); font-weight: 500; letter-spacing: -.03em; line-height: 1.1">{copy.h1}</h1>
+          <p class="standfirst">{copy.standfirst}</p>
+          <div class="dim" style="display: flex; flex-wrap: wrap; gap: 8px 20px; font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em">{copy.meta.map((m) => <span>{m}</span>)}</div>
+        </header>
+
+        <h2 id="idea">{copy.toc[0]}</h2>
+        <p class="p" set:html={copy.idea} />
+
+        <h2 id="equation">{copy.toc[1]}</h2>
+        <p class="p" set:html={copy.eqIntro} />
+
+        <figure role="math" aria-label="i h-bar times partial psi over partial t equals minus h-bar squared over 2 m times second partial psi over partial x squared, plus V of x times psi" class="eq">
+          <div class="eq-row">
+            <span>iħ</span>
+            <span class="frac"><span>∂ψ</span><span>∂t</span></span>
+            <span class="op">=</span><span class="up">−</span>
+            <span class="frac"><span>ħ²</span><span>2m</span></span>
+            <span class="frac"><span>∂²ψ</span><span>∂x²</span></span>
+            <span class="op">+</span>
+            <span>V<span class="up">(</span>x<span class="up">)</span>ψ</span>
+          </div>
+          <span class="eq-n">(1)</span>
+        </figure>
+
+        <div class="callout">
+          <span class="eyebrow eyebrow-amber">{copy.keyLabel}</span>
+          <span class="callout-text" set:html={copy.key} />
+        </div>
+
+        <h2 id="terms">{copy.toc[2]}</h2>
+        <ul class="p terms">{copy.terms.map((x) => <li set:html={x} />)}</ul>
+
+        <figure class="stack" style="margin: 12px 0; gap: 12px">
+          <Media label={copy.fig} radius="14px" />
+          <figcaption class="dim" style="font-size: 14px; line-height: 1.5">{copy.figCap}</figcaption>
+        </figure>
+
+        <h2 id="probability">{copy.toc[3]}</h2>
+        <p class="p" set:html={copy.prob} />
+
+        <figure role="math" aria-label="The integral from minus infinity to infinity of the absolute value of psi squared, d x, equals 1" class="eq">
+          <div class="eq-row" style="gap: 8px">
+            <span style="display: inline-flex; align-items: center"><span class="up" style="font-size: 46px">∫</span><span class="limits"><span>∞</span><span>−∞</span></span></span>
+            <span><span class="up">|</span>ψ<span class="up">|</span>²</span><span>dx</span>
+            <span class="op">=</span><span class="up">1</span>
+          </div>
+          <span class="eq-n">(2)</span>
+        </figure>
+
+        <nav aria-label="Next and previous lessons" class="pager">
+          <a href={l('/learn/math-physics/')} class="outline pg"><span class="pg-k">{copy.prev}</span><span style="font-size: 18px">{copy.prevT}</span></a>
+          <a href={l('/learn/math-physics/')} class="outline pg" style="align-items: flex-end; text-align: right"><span class="pg-k">{copy.next}</span><span style="font-size: 18px">{copy.nextT}</span></a>
+        </nav>
+      </div>
+    </article>
+  </div>
+</Base>
+
+<script>
+  // Highlight the section currently in view in the "On this page" list.
+  const links = document.querySelectorAll<HTMLAnchorElement>('[data-toc]');
+  const obs = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        links.forEach((a) => a.classList.toggle('on', a.dataset.toc === e.target.id));
+      });
+    },
+    { rootMargin: '-20% 0px -70% 0px' }
+  );
+  links.forEach((a) => { const el = document.getElementById(a.dataset.toc!); if (el) obs.observe(el); });
+</script>
+
+<style>
+  .lesson { display: flex; flex-wrap: wrap; gap: 64px; justify-content: center; }
+  .toc { flex: 1 1 220px; max-width: 260px; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding-top: 220px; align-self: flex-start; position: sticky; top: 0; }
+  .toc a { min-height: 40px; display: flex; align-items: center; color: var(--muted); font-size: 15px; border-left: 2px solid var(--hairline); padding-left: 14px; }
+  .toc a.on { color: var(--amber); border-left-color: var(--amber); }
+  .col { flex: 999 1 560px; max-width: 700px; min-width: 0; display: flex; flex-direction: column; gap: 28px; }
+  .col h2 { margin: 12px 0 0; font-size: 28px; font-weight: 500; letter-spacing: -.02em; scroll-margin-top: 100px; }
+  .standfirst { font-family: var(--font-serif); font-size: 23px; line-height: 1.55; color: var(--muted); }
+  .p { font-family: var(--font-serif); font-size: 21px; line-height: 1.75; color: var(--prose); }
+  :global(html[lang='bn']) .p, :global(html[lang='bn']) .standfirst { font-size: 20px; line-height: 1.85; }
+  .terms { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 14px; }
+  .eq { margin: 8px 0; background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px; padding: 36px 56px 36px 24px; display: flex; align-items: center; justify-content: center; position: relative; overflow-x: auto; }
+  .eq-row { display: flex; align-items: center; gap: 10px; font-family: 'Newsreader', Georgia, serif; font-size: 30px; font-style: italic; white-space: nowrap; }
+  .frac { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.15; }
+  .frac > span { padding: 0 4px; }
+  .frac > span + span { border-top: 1.5px solid var(--text); }
+  .op { font-style: normal; margin: 0 6px; }
+  .up { font-style: normal; }
+  .limits { display: inline-flex; flex-direction: column; font-size: 14px; margin-left: -2px; gap: 18px; }
+  .eq-n { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 13px; color: var(--dim); }
+  .callout { border: 1px solid rgba(242,178,62,.35); background: rgba(242,178,62,.06); border-radius: 14px; padding: 20px 22px; display: flex; flex-direction: column; gap: 6px; }
+  .callout-text { font-family: var(--font-serif); font-size: 20px; line-height: 1.65; color: var(--prose); }
+  .pager { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 12px; margin-top: 40px; }
+  .pg { display: flex; flex-direction: column; gap: 6px; border-radius: 14px; padding: 20px; }
+  .pg-k { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; color: var(--dim); }
+  :global(html[lang='bn']) .pg-k { letter-spacing: 0; font-size: 13px; }
+  @media (max-width: 900px) { .toc { display: none; } }
+  @media (max-width: 600px) { .eq-row { font-size: 22px; } .p { font-size: 19px; } }
+</style>

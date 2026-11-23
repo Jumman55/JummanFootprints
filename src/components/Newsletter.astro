@@ -1,0 +1,41 @@
+---
+import { site } from '../data/site';
+import { getLang, ui } from '../i18n';
+const t = ui[getLang(Astro.url)].nl;
+---
+<section id="newsletter" class="container" style="padding-bottom: 120px">
+  <div class="panel nl">
+    <div class="stack" style="gap: 14px; flex: 1 1 420px">
+      <div class="eyebrow eyebrow-amber">{t.eyebrow}</div>
+      <h2 class="nl-title">{t.title1}<br />{t.title2}</h2>
+      <p class="muted" style="font-size: 17px; line-height: 1.6; max-width: 480px">{t.body}</p>
+    </div>
+    <form class="stack nl-form" method="post" action={site.newsletterAction || undefined} data-nl data-thanks={t.thanks}>
+      <label for="nl-email" class="muted" style="font-size: 14px">{t.label}</label>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <input id="nl-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com" class="input" />
+        <button type="submit" class="btn btn-primary" style="min-height: 52px; padding: 0 24px">{t.button}</button>
+      </div>
+      <div class="dim nl-note" style="font-size: 13px" aria-live="polite">{t.note}</div>
+    </form>
+  </div>
+</section>
+
+<script>
+  // Until a newsletter provider is connected (site.newsletterAction), confirm locally instead of posting nowhere.
+  document.querySelectorAll<HTMLFormElement>('form[data-nl]').forEach((form) => {
+    if (form.getAttribute('action')) return;
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const note = form.querySelector('.nl-note');
+      if (note) note.textContent = form.dataset.thanks ?? '';
+      form.reset();
+    });
+  });
+</script>
+
+<style>
+  .nl { border-radius: 24px; padding: clamp(28px, 5vw, 64px); display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-end; justify-content: space-between; }
+  .nl-title { font-size: clamp(28px, 4vw, 44px); font-weight: 500; letter-spacing: -.02em; line-height: 1.15; }
+  .nl-form { gap: 8px; flex: 1 1 380px; }
+</style>

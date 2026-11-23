@@ -1,0 +1,108 @@
+---
+import Base from '../layouts/Base.astro';
+import Media from '../components/Media.astro';
+import VideoCard from '../components/VideoCard.astro';
+import { site } from '../data/site';
+import { videos } from '../data/adventures';
+import { getLang, localize } from '../i18n';
+
+const lang = getLang(Astro.url);
+const l = (p: string) => localize(p, lang);
+const pick = (slug: string) => videos.find((v) => v.slug === slug)!;
+const works = ['monte-tarino', 'lake-martignano', 'florence-winter', 'monte-petrella', 'siena', 'monte-tino'].map(pick);
+
+const copy = {
+  en: {
+    title: 'About — Jumman',
+    desc: 'Jumman: a Rome-based creator with roots in Bangladesh making cinematic adventure films told in Bangla.',
+    eyebrow: 'About',
+    portrait: 'Portrait · on the trail, camera in hand',
+    h1: 'I make cinematic adventure films, and I tell them in Bangla.',
+    p1: "I'm Jumman, a content creator based in Rome with roots in Bangladesh. I hike solo, mostly by public transport and with homemade food, and film the journey for a global Bangla-speaking audience: mountains, historic places and cinematic stories, from Italy to the world.",
+    p2: "Behind the camera I study framing, lenses and colour grading in DaVinci Resolve. Away from it I'm working through mathematics and physics, all the way to quantum mechanics. This site is where all of it lives, on my own terms.",
+    touch: 'Get in touch',
+    now: "What I'm doing now",
+    work: 'Selected work',
+    pieces: 'From the channel',
+    gear: 'Gear',
+    g: [['Camera', 'Sony Alpha 7 IV'], ['Lens', '20 mm'], ['Drone', 'DJI Mini 5 Pro'], ['360°', 'DJI Osmo 360'], ['Profile', 'S-Log3 · D-Log M'], ['Edit & grade', 'DaVinci Resolve']],
+    contact: 'Contact',
+    contactText: 'Collaborations, brand work, or just a question about a trail.',
+    email: '[your contact email]',
+  },
+  bn: {
+    title: 'পরিচিতি — জুম্মান',
+    desc: 'জুম্মান: রোমে থাকা, বাংলাদেশে শিকড়, বাংলায় বলা সিনেমাটিক অ্যাডভেঞ্চার ফিল্মের নির্মাতা।',
+    eyebrow: 'পরিচিতি',
+    portrait: 'প্রতিকৃতি · ট্রেইলে, হাতে ক্যামেরা',
+    h1: 'আমি সিনেমাটিক অ্যাডভেঞ্চার ফিল্ম বানাই, আর গল্পগুলো বলি বাংলায়।',
+    p1: 'আমি জুম্মান, রোমে থাকা একজন কনটেন্ট ক্রিয়েটর, শিকড় বাংলাদেশে। আমি একা হাইক করি, বেশিরভাগ সময় পাবলিক ট্রান্সপোর্টে আর ঘরে রান্না করা খাবার নিয়ে, আর সেই যাত্রা ফিল্মে ধরি সারা বিশ্বের বাংলাভাষী দর্শকের জন্য: পাহাড়, ইতিহাস আর গল্প বলার ভিডিও, বাংলাদেশ থেকে ইউরোপ, আমার চোখে পৃথিবী।',
+    p2: 'ক্যামেরার পেছনে আমি শিখছি ফ্রেমিং, লেন্স আর DaVinci Resolve-এ কালার গ্রেডিং। ক্যামেরার বাইরে আমি গণিত আর পদার্থবিজ্ঞান পড়ছি, একেবারে কোয়ান্টাম মেকানিক্স পর্যন্ত। এই সাইটেই সব কিছু থাকে, আমার নিজের শর্তে।',
+    touch: 'যোগাযোগ করুন',
+    now: 'এখন কী করছি',
+    work: 'নির্বাচিত কাজ',
+    pieces: 'চ্যানেল থেকে',
+    gear: 'সরঞ্জাম',
+    g: [['ক্যামেরা', 'Sony Alpha 7 IV'], ['লেন্স', '২০ মিমি'], ['ড্রোন', 'DJI Mini 5 Pro'], ['৩৬০°', 'DJI Osmo 360'], ['প্রোফাইল', 'S-Log3 · D-Log M'], ['এডিট ও গ্রেড', 'DaVinci Resolve']],
+    contact: 'যোগাযোগ',
+    contactText: 'কোলাবোরেশন, ব্র্যান্ডের কাজ, অথবা কোনো ট্রেইল নিয়ে প্রশ্ন।',
+    email: '[আপনার ইমেইল ঠিকানা]',
+  },
+}[lang];
+---
+<Base title={copy.title} active="about" description={copy.desc}>
+  <div class="container page" style="gap: 96px">
+    <section class="intro">
+      <div class="portrait"><Media label={copy.portrait} ratio="4 / 5" radius="20px" /></div>
+      <div class="stack" style="flex: 999 1 480px; min-width: 0; gap: 22px">
+        <div class="eyebrow">{copy.eyebrow}</div>
+        <h1 style="font-size: clamp(34px, 5.5vw, 60px); font-weight: 500; letter-spacing: -.03em; line-height: 1.1">{copy.h1}</h1>
+        <p class="body">{copy.p1}</p>
+        <p class="body">{copy.p2}</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px">
+          <a href="#contact" class="btn btn-primary">{copy.touch}</a>
+          <a href={l('/now/')} class="btn">{copy.now}</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="stack" style="gap: 28px">
+      <div class="section-head">
+        <h2 class="h-section">{copy.work}</h2>
+        <a href={site.social.youtube} rel="noopener" target="_blank">{copy.pieces} ↗</a>
+      </div>
+      <div class="grid-auto" style="gap: 32px 24px">{works.map((v) => <VideoCard video={v} />)}</div>
+    </section>
+
+    <section style="display: flex; flex-wrap: wrap; gap: 24px">
+      <div class="panel box">
+        <h2 class="label" style="margin-bottom: 12px">{copy.gear}</h2>
+        <dl class="row-list" style="margin: 0">
+          {copy.g.map(([k, v]) => <div class="gear-row"><dt class="dim">{k}</dt><dd>{v}</dd></div>)}
+        </dl>
+      </div>
+      <div id="contact" class="outline box" style="gap: 16px">
+        <h2 class="label" style="margin-bottom: 4px">{copy.contact}</h2>
+        <p style="font-size: 22px; line-height: 1.45">{copy.contactText}</p>
+        {site.email
+          ? <a href={`mailto:${site.email}`} class="amber mail">{site.email} ↗</a>
+          : <span class="amber mail">{copy.email}</span>}
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto">
+          <a href={site.social.youtube} class="pill" rel="noopener" target="_blank">YouTube</a>
+          <a href={site.social.instagram} class="pill" rel="noopener" target="_blank">Instagram</a>
+          <a href={site.social.facebook} class="pill" rel="noopener" target="_blank">Facebook</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .intro { display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start; }
+  .portrait { flex: 1 1 340px; min-width: 0; max-width: 420px; }
+  .body { font-size: 19px; line-height: 1.7; color: var(--body); max-width: 640px; }
+  .box { flex: 1 1 360px; min-width: 0; padding: 32px; display: flex; flex-direction: column; gap: 6px; }
+  .gear-row { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; }
+  .gear-row dd { margin: 0; text-align: right; }
+  .mail { font-family: var(--font-mono); font-size: 17px; min-height: 44px; display: inline-flex; align-items: center; }
+</style>

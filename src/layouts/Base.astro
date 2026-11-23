@@ -1,0 +1,53 @@
+---
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import type { NavId } from '../data/site';
+import { getLang, switchPath, ui } from '../i18n';
+import '../styles/global.css';
+
+interface Props { title: string; description?: string; active: NavId; image?: string }
+const lang = getLang(Astro.url);
+const {
+  title,
+  description = lang === 'bn'
+    ? 'বাংলায় বলা, ইংরেজি সাবটাইটেলসহ সিনেমাটিক অ্যাডভেঞ্চার ভ্লগ। পাশাপাশি সিনেমাটোগ্রাফি, গণিত আর পদার্থবিজ্ঞানের পাঠ।'
+    : 'Cinematic adventure vlogs narrated in Bangla with English subtitles, plus lessons on cinematography, maths and physics.',
+  active,
+  image,
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const alternate = new URL(switchPath(Astro.url), Astro.site);
+const enUrl = lang === 'en' ? canonical : alternate;
+const bnUrl = lang === 'bn' ? canonical : alternate;
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0C0B0A" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="bn" href={bnUrl} />
+    <link rel="alternate" hreflang="x-default" href={enUrl} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content={lang === 'bn' ? 'bn_BD' : 'en_GB'} />
+    {image && <meta property="og:image" content={image} />}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Doto:wght@700..900&family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&family=Noto+Sans+Bengali:wght@400..700&family=Noto+Serif+Bengali:wght@400..600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&display=swap" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">{ui[lang].skip}</a>
+    <Nav active={active} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

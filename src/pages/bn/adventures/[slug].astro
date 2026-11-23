@@ -1,0 +1,10 @@
+---
+// Bangla version: the page reads its language from the /bn/ URL.
+import VideoPage from '../../../components/VideoPage.astro';
+import { videos } from '../../../data/adventures';
+export function getStaticPaths() {
+  return videos.map((video) => ({ params: { slug: video.slug }, props: { video } }));
+}
+const { video } = Astro.props;
+---
+<VideoPage video={video} />

@@ -1,0 +1,109 @@
+---
+import Base from '../../layouts/Base.astro';
+import Media from '../../components/Media.astro';
+import { getLang, localize } from '../../i18n';
+
+const lang = getLang(Astro.url);
+const l = (p: string) => localize(p, lang);
+const copy = {
+  en: {
+    title: 'Learn — Jumman', desc: 'Free lessons on cinematography, maths and physics.',
+    eyebrow: 'Learn', h1: "Two things I can't stop learning.",
+    lede: 'How to make a frame look the way it feels, and how the universe works underneath it. Free lessons, written the way I wish someone had explained them to me.',
+    frame: 'Frame grab with a thirds grid overlay',
+    cinema: 'Cinematography', cinemaH: 'Framing, lenses, colour, grading',
+    cinemaP: "What I've learned filming solo in the mountains, from composing a shot to grading S-Log3 in DaVinci Resolve.",
+    browse: 'Browse lessons →',
+    math: 'Math & Physics', mathH: 'From π to quantum mechanics',
+    mathP: 'Explainers that start from why π is in every circle and climb, step by step, to the Schrödinger equation.',
+    browse2: 'Browse explainers →',
+    formulas: 'Formulas: C equals 2 pi r, and i h-bar d psi d t equals H psi',
+    latest: 'Latest lessons', date: '[Date]',
+    rows: [
+      { cat: 'Physics', title: 'The Schrödinger equation, slowly', href: '/learn/schrodinger-equation/' },
+      { cat: 'Grading', title: 'From S-Log3 to a film look in DaVinci Resolve', href: '/learn/cinematography/' },
+      { cat: 'Maths', title: 'Why π is in every circle', href: '/learn/math-physics/' },
+    ],
+  },
+  bn: {
+    title: 'শিখুন — জুম্মান', desc: 'সিনেমাটোগ্রাফি, গণিত আর পদার্থবিজ্ঞানের বিনামূল্যের পাঠ।',
+    eyebrow: 'শিখুন', h1: 'দুটি জিনিস, যা শেখা থামাতে পারি না।',
+    lede: 'কীভাবে একটা ফ্রেমকে অনুভূতির মতো দেখানো যায়, আর তার নিচে মহাবিশ্ব কীভাবে কাজ করে। বিনামূল্যের পাঠ, ঠিক যেভাবে চেয়েছিলাম কেউ আমাকে বুঝিয়ে বলুক।',
+    frame: 'থার্ডস গ্রিডসহ একটি ফ্রেম',
+    cinema: 'সিনেমাটোগ্রাফি', cinemaH: 'ফ্রেমিং, লেন্স, রং, গ্রেডিং',
+    cinemaP: 'পাহাড়ে একা শুট করতে গিয়ে যা শিখেছি: শট সাজানো থেকে DaVinci Resolve-এ S-Log3 গ্রেড করা পর্যন্ত।',
+    browse: 'পাঠগুলো দেখুন →',
+    math: 'গণিত ও পদার্থবিজ্ঞান', mathH: 'π থেকে কোয়ান্টাম মেকানিক্স',
+    mathP: 'ব্যাখ্যাগুলো শুরু হয় প্রতিটি বৃত্তে কেন π থাকে সেখান থেকে, তারপর ধাপে ধাপে শ্রোডিঙ্গার সমীকরণ পর্যন্ত।',
+    browse2: 'ব্যাখ্যাগুলো দেখুন →',
+    formulas: 'সূত্র: C সমান 2πr, এবং iħ ∂ψ/∂t সমান Ĥψ',
+    latest: 'সাম্প্রতিক পাঠ', date: '[তারিখ]',
+    rows: [
+      { cat: 'পদার্থবিজ্ঞান', title: 'শ্রোডিঙ্গার সমীকরণ, ধীরে ধীরে', href: '/learn/schrodinger-equation/' },
+      { cat: 'গ্রেডিং', title: 'S-Log3 থেকে ফিল্ম লুক, DaVinci Resolve-এ', href: '/learn/cinematography/' },
+      { cat: 'গণিত', title: 'প্রতিটি বৃত্তে কেন π থাকে', href: '/learn/math-physics/' },
+    ],
+  },
+}[lang];
+---
+<Base title={copy.title} active="learn" description={copy.desc}>
+  <div class="container page" style="gap: 56px">
+    <header class="stack" style="gap: 16px; max-width: 760px">
+      <div class="eyebrow">{copy.eyebrow}</div>
+      <h1 class="display">{copy.h1}</h1>
+      <p class="lede">{copy.lede}</p>
+    </header>
+
+    <div class="grid-fit">
+      <a href={l('/learn/cinematography/')} class="panel track">
+        <div style="position: relative">
+          <Media label={copy.frame} radius="0px" />
+          <div class="thirds" aria-hidden="true">{Array.from({ length: 9 }).map(() => <span></span>)}</div>
+        </div>
+        <div class="track-body">
+          <div class="eyebrow eyebrow-amber">{copy.cinema}</div>
+          <h2 class="h-section">{copy.cinemaH}</h2>
+          <p class="muted" style="font-size: 17px; line-height: 1.6">{copy.cinemaP}</p>
+          <span class="go">{copy.browse}</span>
+        </div>
+      </a>
+      <a href={l('/learn/math-physics/')} class="panel track">
+        <div class="formulas" role="img" aria-label={copy.formulas}>
+          <span class="serif-i" style="font-size: clamp(30px, 3.4vw, 44px)">C = 2πr</span>
+          <span class="serif-i amber" style="font-size: clamp(24px, 2.6vw, 34px)">iħ ∂ψ/∂t = Ĥψ</span>
+        </div>
+        <div class="track-body">
+          <div class="eyebrow eyebrow-amber">{copy.math}</div>
+          <h2 class="h-section">{copy.mathH}</h2>
+          <p class="muted" style="font-size: 17px; line-height: 1.6">{copy.mathP}</p>
+          <span class="go">{copy.browse2}</span>
+        </div>
+      </a>
+    </div>
+
+    <section class="stack" style="gap: 8px">
+      <div class="section-head" style="margin-bottom: 8px"><h2 style="font-size: 28px; font-weight: 500; letter-spacing: -.02em">{copy.latest}</h2></div>
+      <div class="row-list">
+        {copy.rows.map((r) => (
+          <a href={l(r.href)} class="lrow"><span class="meta">{r.cat}</span><span style="font-size: 20px">{r.title}</span><span class="dim date">{copy.date}</span></a>
+        ))}
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .track { display: flex; flex-direction: column; border-radius: 24px; overflow: hidden; color: var(--text); }
+  .track:hover { color: var(--text); border-color: rgba(242,178,62,.35); }
+  .track:hover .go { color: var(--amber); }
+  .thirds { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
+  .thirds span { border-right: 1px solid rgba(242,178,62,.45); border-bottom: 1px solid rgba(242,178,62,.45); }
+  .thirds span:nth-child(3n) { border-right: 0; }
+  .thirds span:nth-child(n+7) { border-bottom: 0; }
+  .formulas { aspect-ratio: 16 / 9; background: #12110f; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; border-bottom: 1px solid var(--hairline-soft); }
+  .track-body { padding: 32px; display: flex; flex-direction: column; gap: 12px; }
+  .go { font-size: 15px; margin-top: 8px; }
+  .lrow { display: grid; grid-template-columns: 160px minmax(0, 1fr) auto; gap: 24px; align-items: baseline; padding: 18px 0; }
+  .date { font-family: var(--font-mono); font-size: 12px; }
+  @media (max-width: 600px) { .lrow { grid-template-columns: 1fr; gap: 6px; } }
+</style>

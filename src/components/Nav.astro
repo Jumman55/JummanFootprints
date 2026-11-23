@@ -1,0 +1,69 @@
+---
+import { site, navLinks, type NavId } from '../data/site';
+import { getLang, localize, switchPath, ui } from '../i18n';
+interface Props { active: NavId }
+const { active } = Astro.props;
+const lang = getLang(Astro.url);
+const t = ui[lang];
+const other = switchPath(Astro.url);
+---
+<header class="nav-wrap">
+  <nav aria-label="Main" class="container nav">
+    <a href={localize('/', lang)} class="brand" aria-label={t.homeLabel}>
+      <span class="dot-display brand-word">{site.name}</span>
+      <span class="brand-tag">{t.tagline}</span>
+    </a>
+    <div class="links">
+      {navLinks.map((l) => (
+        <a href={localize(l.href, lang)} aria-current={l.id === active ? 'page' : undefined} class:list={['link', { on: l.id === active }]}>{t.nav[l.id]}</a>
+      ))}
+    </div>
+    <div class="tools">
+      <button type="button" class="tool icon" aria-label={t.search} title={t.search} disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4 4" /></svg>
+      </button>
+      <a href={other} class="tool lang" aria-label={t.switchLabel} hreflang={lang === 'en' ? 'bn' : 'en'} data-lang-switch={lang === 'en' ? 'bn' : 'en'}>
+        <span class:list={{ cur: lang === 'en' }} lang="en">EN</span>
+        <span aria-hidden="true">/</span>
+        <span class:list={{ cur: lang === 'bn' }} lang="bn">বাং</span>
+      </a>
+    </div>
+  </nav>
+</header>
+
+<script>
+  // Remember the visitor's language choice so the home page can greet them in it next time.
+  document.querySelectorAll<HTMLAnchorElement>('[data-lang-switch]').forEach((a) =>
+    a.addEventListener('click', () => {
+      try { localStorage.setItem('lang', a.dataset.langSwitch!); } catch {}
+    })
+  );
+</script>
+
+<style>
+  .nav-wrap { position: sticky; top: 0; z-index: 50; background: rgba(12, 11, 10, 0.88); backdrop-filter: saturate(140%) blur(12px); border-bottom: 1px solid var(--hairline); }
+  .nav { padding-top: 14px; padding-bottom: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; }
+  .brand:hover { color: var(--text); }
+  .brand-word { font-size: 24px; letter-spacing: .04em; }
+  .brand-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+  :global(html[lang='bn']) .brand-tag { letter-spacing: .02em; font-size: 13px; }
+  .links { display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto; }
+  .link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; font-family: var(--font-mono); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  :global(html[lang='bn']) .link { font-size: 15px; letter-spacing: 0; }
+  .link:hover { color: var(--text); }
+  .link.on { color: var(--amber); }
+  .tools { display: flex; align-items: center; gap: 8px; }
+  .tool { display: inline-flex; height: 44px; align-items: center; justify-content: center; gap: 6px; padding: 0 12px; background: transparent; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; color: var(--dim); font-family: var(--font-mono); font-size: 12px; }
+  .tool.icon { width: 44px; padding: 0; cursor: not-allowed; opacity: .6; }
+  .lang { cursor: pointer; }
+  .lang:hover { border-color: var(--amber); color: var(--muted); }
+  .lang .cur { color: var(--amber); font-weight: 600; }
+  .lang [lang='bn'] { font-family: var(--font-bn); font-size: 13px; }
+  @media (max-width: 720px) {
+    .nav { gap: 4px 12px; }
+    .links { order: 3; flex-basis: 100%; margin: 0 -12px; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+    .links::-webkit-scrollbar { display: none; }
+    .tools { margin-left: auto; }
+  }
+</style>

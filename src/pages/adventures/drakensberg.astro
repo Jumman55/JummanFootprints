@@ -1,0 +1,103 @@
+---
+import Base from '../../layouts/Base.astro';
+import Media from '../../components/Media.astro';
+import { site } from '../../data/site';
+import { videos, ytThumb } from '../../data/adventures';
+import { getLang, localize, ui } from '../../i18n';
+
+const lang = getLang(Astro.url);
+const l = (p: string) => localize(p, lang);
+const t = ui[lang];
+const newest = videos[videos.length - 1];
+
+const copy = {
+  en: {
+    title: 'Eight days solo on the Drakensberg — Jumman',
+    desc: 'Eight days walking the Drakensberg escarpment alone, along the border of South Africa and Lesotho.',
+    back: '← All adventures',
+    h1: 'Eight days solo on the Drakensberg',
+    alt: 'ড্রাকেন্সবার্গের চূড়ায়, একা আট দিন',
+    altLang: 'bn',
+    facts: [['Date', 'March 2022'], ['Location', 'uKhahlamba-Drakensberg Park'], ['Country', 'South Africa / Lesotho'], ['Duration', '8 days, solo']],
+    note: 'Before the channel: this trip has no film yet.',
+    story: 'The story',
+    p1: 'In March 2022 I walked the Drakensberg escarpment alone for eight days, along the border between South Africa and Lesotho. The route started at Cathedral Peak and climbed Organ Pipes Pass onto the top of the range, then went north toward Mnweni.',
+    p2: 'Halfway I dropped down Rockeries Pass to resupply, then came back up through Fangs Pass, with some bushwhacking, and kept going north to the Amphitheatre and Tugela Falls. On the last day I came down the Chain Ladders at the Sentinel.',
+    route: 'Route',
+    steps: ['Cathedral Peak → Organ Pipes Pass', 'North along the escarpment toward Mnweni', 'Down Rockeries Pass to resupply', 'Back up Fangs Pass, with bushwhacking', 'North to the Amphitheatre and Tugela Falls', 'Last night on the escarpment, out via the Chain Ladders'],
+    stills: 'Stills',
+    s: ['Still · Organ Pipes Pass', 'Still · Escarpment camp', 'Still · Tugela Falls'],
+    newer: 'Newer →',
+  },
+  bn: {
+    title: 'ড্রাকেন্সবার্গের চূড়ায়, একা আট দিন — জুম্মান',
+    desc: 'দক্ষিণ আফ্রিকা আর লেসোথোর সীমান্ত ধরে ড্রাকেন্সবার্গের চূড়ায় একা আট দিন হাঁটা।',
+    back: '← সব অভিযান',
+    h1: 'ড্রাকেন্সবার্গের চূড়ায়, একা আট দিন',
+    alt: 'Eight days solo on the Drakensberg',
+    altLang: 'en',
+    facts: [['তারিখ', 'মার্চ ২০২২'], ['জায়গা', 'উখাহলাম্বা-ড্রাকেন্সবার্গ পার্ক'], ['দেশ', 'দক্ষিণ আফ্রিকা / লেসোথো'], ['সময়', '৮ দিন, একা']],
+    note: 'চ্যানেল শুরুর আগের যাত্রা: এর এখনো কোনো ফিল্ম নেই।',
+    story: 'গল্প',
+    p1: '২০২২ সালের মার্চে আমি একা আট দিন ধরে ড্রাকেন্সবার্গের খাড়া প্রাচীর ধরে হেঁটেছিলাম, দক্ষিণ আফ্রিকা আর লেসোথোর সীমান্ত বরাবর। যাত্রা শুরু হয় ক্যাথেড্রাল পিক থেকে, অর্গান পাইপস পাস বেয়ে পর্বতশ্রেণির চূড়ায় উঠে, তারপর উত্তরে এমনওয়েনির দিকে।',
+    p2: 'মাঝপথে রসদ নিতে রকারিজ পাস দিয়ে নেমে আসি, তারপর ফ্যাংস পাস দিয়ে আবার উঠি, কিছুটা ঝোপঝাড় ঠেলে, আর উত্তরে এগিয়ে যাই অ্যাম্ফিথিয়েটার আর টুগেলা জলপ্রপাতের দিকে। শেষ দিনে সেন্টিনেলের চেইন ল্যাডার বেয়ে নেমে আসি।',
+    route: 'পথ',
+    steps: ['ক্যাথেড্রাল পিক → অর্গান পাইপস পাস', 'প্রাচীর ধরে উত্তরে এমনওয়েনির দিকে', 'রসদ নিতে রকারিজ পাস দিয়ে নামা', 'ফ্যাংস পাস দিয়ে আবার ওঠা, ঝোপঝাড় ঠেলে', 'উত্তরে অ্যাম্ফিথিয়েটার ও টুগেলা জলপ্রপাত', 'প্রাচীরে শেষ রাত, চেইন ল্যাডার দিয়ে ফেরা'],
+    stills: 'স্থিরচিত্র',
+    s: ['স্থিরচিত্র · অর্গান পাইপস পাস', 'স্থিরচিত্র · প্রাচীরের ক্যাম্প', 'স্থিরচিত্র · টুগেলা জলপ্রপাত'],
+    newer: 'নতুন →',
+  },
+}[lang];
+const num = (i: number) => (lang === 'bn' ? ['০১', '০২', '০৩', '০৪', '০৫', '০৬'][i] : String(i + 1).padStart(2, '0'));
+---
+<Base title={copy.title} active="adventures" description={copy.desc}>
+  <article>
+    <header class="container stack" style="padding-top: 56px; padding-bottom: 32px; gap: 20px">
+      <a href={l('/adventures/')} class="back-link">{copy.back}</a>
+      <div class="tags"><span class="tag tag-on">{t.tags.expedition}</span><span class="tag">{t.tags.hiking}</span></div>
+      <h1 style="font-size: clamp(36px, 6vw, 72px); font-weight: 500; letter-spacing: -.03em; line-height: 1.05; max-width: 960px">{copy.h1}</h1>
+      <p lang={copy.altLang} class="muted" style="font-size: clamp(18px, 2vw, 22px)">{copy.alt}</p>
+      <dl class="facts">{copy.facts.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
+      <p class="dim" style="font-size: 15px">{copy.note}</p>
+    </header>
+
+    <div class="container body-wrap">
+      <section class="stack" style="gap: 18px">
+        <h2 class="label">{copy.story}</h2>
+        <p class="prose">{copy.p1}</p>
+        <p class="prose">{copy.p2}</p>
+      </section>
+      <section class="stack" style="gap: 18px">
+        <h2 class="label">{copy.route}</h2>
+        <ol class="row-list route">{copy.steps.map((r, i) => <li><span class="dim n">{num(i)}</span><span>{r}</span></li>)}</ol>
+      </section>
+      <section class="stack" style="gap: 18px">
+        <h2 class="label">{copy.stills}</h2>
+        <div class="stills">{copy.s.map((s) => <Media label={s} ratio="4 / 5" radius="12px" />)}</div>
+      </section>
+    </div>
+  </article>
+
+  <nav aria-label="More adventures" class="container pager">
+    <a href={l(`/adventures/${newest.slug}/`)} class="outline pg" style="align-items: flex-end; text-align: right">
+      <span class="meta">{copy.newer}</span><span style="font-size: 20px">{newest.title[lang]}</span>
+    </a>
+  </nav>
+</Base>
+
+<style>
+  .facts { margin: 8px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 16px; overflow: hidden; }
+  .facts > div { background: var(--ground); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+  .facts dt { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+  :global(html[lang='bn']) .facts dt { letter-spacing: 0; font-size: 13px; }
+  .facts dd { margin: 0; font-size: 16px; }
+  .body-wrap { padding-top: 40px; display: flex; flex-direction: column; gap: 56px; max-width: 760px; margin-left: auto; margin-right: auto; }
+  @media (min-width: 1248px) { .body-wrap { margin-left: max(24px, calc((100vw - 1200px) / 2)); } }
+  .prose { font-size: 19px; line-height: 1.75; color: var(--body); }
+  .route { margin: 0; padding: 0; list-style: none; }
+  .route li { display: flex; gap: 18px; padding: 14px 0; font-size: 17px; }
+  .route .n { font-family: var(--font-mono); font-size: 13px; width: 28px; flex: 0 0 auto; padding-top: 3px; }
+  .stills { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .pager { padding-top: 96px; padding-bottom: 120px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 24px; }
+  .pg { display: flex; flex-direction: column; gap: 8px; padding: 24px; border-radius: 16px; grid-column: -2 / -1; }
+</style>

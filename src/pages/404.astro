@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+import { getLang, localize } from '../i18n';
+const lang = getLang(Astro.url);
+const copy = {
+  en: { title: 'Lost the trail — Jumman', lede: "This page doesn't exist. Head back to the trailhead.", home: 'Back home' },
+  bn: { title: 'পথ হারিয়েছেন — জুম্মান', lede: 'এই পাতাটি নেই। ট্রেইলহেডে ফিরে চলুন।', home: 'হোমে ফিরুন' },
+}[lang];
+---
+<Base title={copy.title} active="home">
+  <div class="container page" style="gap: 24px; min-height: 60vh; justify-content: center">
+    <div class="eyebrow">404</div>
+    <h1 class="dot-display" style="font-size: clamp(56px, 9vw, 120px)">OFF TRAIL</h1>
+    <p class="lede">{copy.lede}</p>
+    <a href={localize('/', lang)} class="btn btn-primary" style="align-self: flex-start">{copy.home}</a>
+  </div>
+</Base>

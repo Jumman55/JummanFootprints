@@ -1,0 +1,77 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getLang, localize, digits } from '../../i18n';
+
+const lang = getLang(Astro.url);
+const l = (p: string) => localize(p, lang);
+const copy = {
+  en: {
+    title: 'Learn: Math & Physics — Jumman', desc: 'A trail of explainers from π to the Schrödinger equation.',
+    back: '← Learn', eyebrow: 'Math & Physics', h1a: 'A trail from ', h1b: ' to ', h1c: '.',
+    lede: 'Start at the bottom and climb. Each stage builds on the one before, from the geometry of a circle to the equation that describes the quantum world.',
+    maths: 'Maths · [Date]', physics: 'Physics · [Date]',
+    stages: [
+      { title: 'Foundations', formula: 'C = 2πr', lessons: ['Why π is in every circle', 'Trigonometry from a walk around a circle'], kind: 'maths' },
+      { title: 'Change and calculus', formula: 'dy/dx', lessons: ['What is a derivative, really?', 'Complex numbers, without fear'], kind: 'maths' },
+      { title: 'Waves', formula: '∂²u/∂t² = c²∂²u/∂x²', lessons: ['The wave equation, from a guitar string', 'Interference and the double slit'], kind: 'physics' },
+      { title: 'Quantum mechanics', formula: 'iħ ∂ψ/∂t = Ĥψ', lessons: ['The Schrödinger equation, slowly', 'What the uncertainty principle actually says'], kind: 'physics' },
+    ],
+  },
+  bn: {
+    title: 'শিখুন: গণিত ও পদার্থবিজ্ঞান — জুম্মান', desc: 'π থেকে শ্রোডিঙ্গার সমীকরণ পর্যন্ত ব্যাখ্যার একটি পথ।',
+    back: '← শিখুন', eyebrow: 'গণিত ও পদার্থবিজ্ঞান', h1a: '', h1b: ' থেকে ', h1c: ' পর্যন্ত এক পথ।',
+    lede: 'নিচ থেকে শুরু করে ওপরে উঠুন। প্রতিটি ধাপ আগেরটির ওপর দাঁড়িয়ে, বৃত্তের জ্যামিতি থেকে কোয়ান্টাম জগতের সমীকরণ পর্যন্ত।',
+    maths: 'গণিত · [তারিখ]', physics: 'পদার্থবিজ্ঞান · [তারিখ]',
+    stages: [
+      { title: 'ভিত্তি', formula: 'C = 2πr', lessons: ['প্রতিটি বৃত্তে কেন π থাকে', 'বৃত্তের চারপাশে হেঁটে ত্রিকোণমিতি'], kind: 'maths' },
+      { title: 'পরিবর্তন ও ক্যালকুলাস', formula: 'dy/dx', lessons: ['ডেরিভেটিভ আসলে কী?', 'ভয় ছাড়াই জটিল সংখ্যা'], kind: 'maths' },
+      { title: 'তরঙ্গ', formula: '∂²u/∂t² = c²∂²u/∂x²', lessons: ['গিটারের তার থেকে তরঙ্গ সমীকরণ', 'ব্যতিচার আর ডাবল স্লিট'], kind: 'physics' },
+      { title: 'কোয়ান্টাম মেকানিক্স', formula: 'iħ ∂ψ/∂t = Ĥψ', lessons: ['শ্রোডিঙ্গার সমীকরণ, ধীরে ধীরে', 'অনিশ্চয়তা নীতি আসলে কী বলে'], kind: 'physics' },
+    ],
+  },
+}[lang];
+---
+<Base title={copy.title} active="learn" description={copy.desc}>
+  <div class="container page page-tight" style="gap: 56px">
+    <header class="stack" style="gap: 16px; max-width: 780px">
+      <a href={l('/learn/')} class="back-link">{copy.back}</a>
+      <div class="eyebrow eyebrow-amber">{copy.eyebrow}</div>
+      <h1 class="display" style="font-size: clamp(40px, 6.5vw, 80px)">{copy.h1a}<span class="serif-i" style="font-weight: 400">π</span>{copy.h1b}<span class="serif-i" style="font-weight: 400">ψ</span>{copy.h1c}</h1>
+      <p class="lede">{copy.lede}</p>
+    </header>
+
+    <ol class="trail">
+      {copy.stages.map((s, i) => (
+        <li>
+          <div class="rail">
+            <span class="num">{digits(String(i + 1).padStart(2, '0'), lang)}</span>
+            {i < copy.stages.length - 1 && <span class="line" aria-hidden="true"></span>}
+          </div>
+          <div class="stack" style="padding: 6px 0 44px; gap: 14px; min-width: 0">
+            <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px">
+              <h2 style="font-size: 26px; font-weight: 500; letter-spacing: -.02em">{s.title}</h2>
+              <span class="serif-i dim" style="font-size: 20px">{s.formula}</span>
+            </div>
+            <div class="cards">
+              {s.lessons.map((t) => (
+                <a href={l('/learn/schrodinger-equation/')} class="panel lcard"><span style="font-size: 18px; line-height: 1.4">{t}</span><span class="dim" style="font-family: var(--font-mono); font-size: 12px">{s.kind === 'maths' ? copy.maths : copy.physics}</span></a>
+              ))}
+            </div>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</Base>
+
+<style>
+  .trail { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+  .trail li { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 24px; }
+  .rail { display: flex; flex-direction: column; align-items: center; }
+  .num { width: 44px; height: 44px; border-radius: 999px; border: 1px solid var(--amber); color: var(--amber); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 13px; flex: 0 0 auto; }
+  .line { flex: 1 1 auto; width: 0; border-left: 1px dashed rgba(242,178,62,.4); margin: 6px 0; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 12px; }
+  .lcard { display: flex; flex-direction: column; gap: 8px; border-radius: 14px; padding: 18px 20px; }
+  .lcard:hover { border-color: rgba(242,178,62,.35); }
+  @media (max-width: 600px) { .trail li { grid-template-columns: 44px minmax(0, 1fr); gap: 14px; } }
+</style>

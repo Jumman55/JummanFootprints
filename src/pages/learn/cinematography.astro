@@ -1,0 +1,99 @@
+---
+import Base from '../../layouts/Base.astro';
+import Media from '../../components/Media.astro';
+import { getLang, localize, digits } from '../../i18n';
+
+const lang = getLang(Astro.url);
+const l = (p: string) => localize(p, lang);
+const copy = {
+  en: {
+    title: 'Learn: Cinematography — Jumman', desc: 'Lessons on composition, lenses, light and grading in DaVinci Resolve.',
+    back: '← Learn', eyebrow: 'Cinematography', h1: 'Make the frame feel like the place.',
+    lede: 'Lessons from filming solo with one camera and one lens: composition, lenses, light, and grading in DaVinci Resolve.',
+    topicsLabel: 'Topics', date: '[Date]',
+    topics: [
+      { id: 'framing', name: 'Framing', lessons: [
+        { t: 'The rule of thirds, and when to break it', m: 'Basics', img: 'Frame' },
+        { t: 'Scale: putting a small person in a big mountain', m: 'Basics', img: 'Frame' },
+        { t: "Filming yourself when you're alone", m: 'Intermediate', img: 'Frame' },
+      ] },
+      { id: 'lenses', name: 'Lenses', lessons: [
+        { t: 'What a 20 mm lens does to a landscape', m: 'Basics', img: 'Frame' },
+        { t: 'Focal length and the feeling of distance', m: 'Intermediate', img: 'Frame' },
+      ] },
+      { id: 'colour', name: 'Colour & grading', lessons: [
+        { t: "Why log footage looks flat, and why that's good", m: 'Basics', img: 'Before / after' },
+        { t: 'From S-Log3 to a film look in DaVinci Resolve', m: 'Intermediate', img: 'Before / after' },
+        { t: 'Building a reusable PowerGrade, node by node', m: 'Advanced', img: 'Node tree' },
+      ] },
+    ],
+  },
+  bn: {
+    title: 'শিখুন: সিনেমাটোগ্রাফি — জুম্মান', desc: 'কম্পোজিশন, লেন্স, আলো আর DaVinci Resolve-এ গ্রেডিংয়ের পাঠ।',
+    back: '← শিখুন', eyebrow: 'সিনেমাটোগ্রাফি', h1: 'ফ্রেমে যেন জায়গাটার অনুভূতি থাকে।',
+    lede: 'এক ক্যামেরা আর এক লেন্সে একা শুট করার শিক্ষা: কম্পোজিশন, লেন্স, আলো, আর DaVinci Resolve-এ গ্রেডিং।',
+    topicsLabel: 'বিষয়', date: '[তারিখ]',
+    topics: [
+      { id: 'framing', name: 'ফ্রেমিং', lessons: [
+        { t: 'রুল অব থার্ডস, আর কখন তা ভাঙবেন', m: 'প্রাথমিক', img: 'ফ্রেম' },
+        { t: 'স্কেল: বিশাল পাহাড়ে ছোট্ট মানুষ', m: 'প্রাথমিক', img: 'ফ্রেম' },
+        { t: 'একা থাকলে নিজেকে কীভাবে শুট করবেন', m: 'মাঝারি', img: 'ফ্রেম' },
+      ] },
+      { id: 'lenses', name: 'লেন্স', lessons: [
+        { t: '২০ মিমি লেন্স ল্যান্ডস্কেপে কী করে', m: 'প্রাথমিক', img: 'ফ্রেম' },
+        { t: 'ফোকাল লেংথ আর দূরত্বের অনুভূতি', m: 'মাঝারি', img: 'ফ্রেম' },
+      ] },
+      { id: 'colour', name: 'রং ও গ্রেডিং', lessons: [
+        { t: 'লগ ফুটেজ কেন ফ্যাকাশে দেখায়, আর কেন সেটা ভালো', m: 'প্রাথমিক', img: 'আগে / পরে' },
+        { t: 'S-Log3 থেকে ফিল্ম লুক, DaVinci Resolve-এ', m: 'মাঝারি', img: 'আগে / পরে' },
+        { t: 'নোড ধরে ধরে পুনর্ব্যবহারযোগ্য PowerGrade বানানো', m: 'উন্নত', img: 'নোড ট্রি' },
+      ] },
+    ],
+  },
+}[lang];
+---
+<Base title={copy.title} active="learn" description={copy.desc}>
+  <div class="container page page-tight" style="gap: 48px">
+    <header class="stack" style="gap: 16px; max-width: 760px">
+      <a href={l('/learn/')} class="back-link">{copy.back}</a>
+      <div class="eyebrow eyebrow-amber">{copy.eyebrow}</div>
+      <h1 class="display" style="font-size: clamp(40px, 6.5vw, 80px)">{copy.h1}</h1>
+      <p class="lede">{copy.lede}</p>
+    </header>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 48px">
+      <nav aria-label={copy.topicsLabel} class="topics">
+        <div class="eyebrow" style="margin-bottom: 8px">{copy.topicsLabel}</div>
+        {copy.topics.map((t, i) => (
+          <a href={`#${t.id}`} class:list={['topic', { first: i === 0 }]}>{t.name} <span>{digits(String(t.lessons.length).padStart(2, '0'), lang)}</span></a>
+        ))}
+      </nav>
+      <div class="stack" style="flex: 999 1 560px; min-width: 0; gap: 48px">
+        {copy.topics.map((t) => (
+          <section id={t.id} class="stack">
+            <h2 style="margin-bottom: 8px; font-size: 26px; font-weight: 500; letter-spacing: -.02em">{t.name}</h2>
+            <div class="row-list">
+              {t.lessons.map((ls) => (
+                <a href={l('/learn/schrodinger-equation/')} class="lesson">
+                  <div class="thumb"><Media label={ls.img} radius="10px" /></div>
+                  <div class="stack" style="flex: 1 1 260px; gap: 6px"><span style="font-size: 20px">{ls.t}</span><span class="dim" style="font-size: 15px">{ls.m} · {copy.date}</span></div>
+                </a>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .topics { flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 2px; align-self: flex-start; position: sticky; top: 100px; }
+  .topic { min-height: 44px; display: flex; align-items: center; justify-content: space-between; color: var(--muted); }
+  .topic.first { color: var(--amber); }
+  .topic span { font-family: var(--font-mono); font-size: 12px; }
+  .lesson { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; padding: 20px 0; }
+  .thumb { flex: 0 0 180px; }
+  section { scroll-margin-top: 100px; }
+  @media (max-width: 720px) { .topics { position: static; } }
+</style>

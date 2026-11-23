@@ -1,0 +1,9 @@
+---
+interface Props { name: 'youtube' | 'instagram' | 'facebook'; size?: number }
+const { name, size = 20 } = Astro.props;
+---
+<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+  {name === 'youtube' && (<><rect x="2.5" y="5" width="19" height="14" rx="4" /><path d="M10 9.5v5l4.5-2.5z" fill="currentColor" /></>)}
+  {name === 'instagram' && (<><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r="0.8" fill="currentColor" /></>)}
+  {name === 'facebook' && (<path d="M14 8h2.5V4.5H14c-2.2 0-3.5 1.5-3.5 3.7V10H8v3.5h2.5V20H14v-6.5h2.5L17 10h-3V8.6c0-.4.2-.6.6-.6z" />)}
+</svg>

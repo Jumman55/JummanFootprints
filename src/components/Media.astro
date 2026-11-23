@@ -1,0 +1,56 @@
+---
+// Photo / video slot with viewfinder corners. Pass `src` for a real image; without it a labelled placeholder shows.
+interface Props {
+  label: string;
+  ratio?: string;
+  play?: boolean;
+  radius?: string;
+  src?: string;
+  fallback?: string; // second image to try if `src` fails to load
+  alt?: string;
+  eager?: boolean;
+}
+const { label, ratio = '16 / 9', play = false, radius = '16px', src, fallback, alt, eager = false } = Astro.props;
+---
+<div
+  class:list={['media', { 'has-img': !!src }]}
+  style={`aspect-ratio: ${ratio}; border-radius: ${radius};`}
+  role={src ? undefined : 'img'}
+  aria-label={src ? undefined : label}
+>
+  {src && (
+    <img
+      src={src}
+      alt={alt ?? label}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      data-fallback={fallback}
+      onerror={fallback ? "this.onerror=null;this.src=this.dataset.fallback" : undefined}
+    />
+  )}
+  <span class="corner tl" aria-hidden="true"></span>
+  <span class="corner tr" aria-hidden="true"></span>
+  <span class="corner bl" aria-hidden="true"></span>
+  <span class="corner br" aria-hidden="true"></span>
+  {play && (
+    <span class="play" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 14 14"><path d="M3.5 1.5v11l9-5.5z" fill="currentColor" /></svg>
+    </span>
+  )}
+  {!src && <span class="cap" aria-hidden="true">{label}</span>}
+</div>
+
+<style>
+  .media { position: relative; width: 100%; background: #1a1816; overflow: hidden; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); color: var(--dim); }
+  .media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+  :global(a:hover) .media img { transform: scale(1.03); }
+  .corner { position: absolute; width: 18px; height: 18px; border: 0 solid #5a544d; z-index: 1; }
+  .has-img .corner { border-color: rgba(243, 239, 232, 0.7); }
+  .tl { top: 16px; left: 16px; border-top-width: 1.5px; border-left-width: 1.5px; }
+  .tr { top: 16px; right: 16px; border-top-width: 1.5px; border-right-width: 1.5px; }
+  .bl { bottom: 16px; left: 16px; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+  .br { bottom: 16px; right: 16px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+  .play { position: absolute; top: 50%; left: 50%; width: 76px; height: 76px; margin: -38px 0 0 -38px; border-radius: 999px; background: rgba(12, 11, 10, 0.45); border: 1px solid rgba(243, 239, 232, 0.4); display: flex; align-items: center; justify-content: center; color: var(--text); z-index: 1; backdrop-filter: blur(6px); transition: transform .2s, background .2s, color .2s; }
+  :global(a:hover) .play, :global(button:hover) .play { transform: scale(1.06); background: rgba(242, 178, 62, 0.92); color: var(--on-amber); }
+  .cap { position: absolute; top: 18px; left: 44px; right: 44px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+</style>
