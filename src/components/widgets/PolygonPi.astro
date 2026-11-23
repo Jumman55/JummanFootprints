@@ -1,0 +1,62 @@
+---
+// Archimedes: polygons inside and outside a circle squeeze π between them.
+import type { Lang } from '../../i18n';
+interface Props { lang: Lang }
+const t = {
+  en: { sides: 'Number of sides', inside: 'inside', outside: 'outside', hint: 'More sides: the two perimeters close in on π.', label: 'Regular polygons drawn inside and outside a circle' },
+  bn: { sides: 'বাহুর সংখ্যা', inside: 'ভেতরে', outside: 'বাইরে', hint: 'বাহু যত বাড়ে, দুটি পরিসীমা তত π-এর কাছে আসে।', label: 'একটি বৃত্তের ভেতরে ও বাইরে আঁকা সুষম বহুভুজ' },
+}[Astro.props.lang];
+---
+<figure class="widget" data-widget="polygon">
+  <svg viewBox="0 0 680 300" role="img" aria-label={t.label}></svg>
+  <div class="w-controls">
+    <label class="w-control"><span>{t.sides} <output data-out="n">6</output></span><input type="range" name="n" min="3" max="96" step="1" value="6" /></label>
+  </div>
+  <div class="w-readouts">
+    <span class="w-chip amber">{t.inside}: <b data-out="lo"></b></span>
+    <span class="w-chip">π = <b>3.14159…</b></span>
+    <span class="w-chip blue">{t.outside}: <b data-out="hi"></b></span>
+  </div>
+  <figcaption class="w-hint">{t.hint}</figcaption>
+</figure>
+
+<script>
+  import { el, set, slider, out, AMBER, BLUE, TEXT, DIM, GRID } from '../../lib/plot';
+  document.querySelectorAll<HTMLElement>('[data-widget="polygon"]').forEach((root) => {
+    const svg = root.querySelector('svg')!;
+    const CX = 150, CY = 150, R = 115;
+    el('circle', { cx: CX, cy: CY, r: R, fill: 'none', stroke: TEXT, 'stroke-width': 2 }, svg);
+    const inner = el('polygon', { fill: 'rgba(242,178,62,0.10)', stroke: AMBER, 'stroke-width': 2 }, svg);
+    const outer = el('polygon', { fill: 'none', stroke: BLUE, 'stroke-width': 2, 'stroke-dasharray': '6 4' }, svg);
+    // Number line from 2.6 to 3.6
+    const L0 = 330, L1 = 650, LY = 170, v0 = 2.6, v1 = 3.6;
+    const sx = (v: number) => L0 + ((v - v0) / (v1 - v0)) * (L1 - L0);
+    el('line', { x1: L0, y1: LY, x2: L1, y2: LY, stroke: GRID, 'stroke-width': 2 }, svg);
+    for (const v of [2.6, 2.8, 3.0, 3.2, 3.4, 3.6]) {
+      el('line', { x1: sx(v), y1: LY - 5, x2: sx(v), y2: LY + 5, stroke: DIM }, svg);
+      el('text', { x: sx(v), y: LY + 24, fill: DIM, 'font-size': 12, 'text-anchor': 'middle', 'font-family': 'Geist Mono, monospace' }, svg).textContent = v.toFixed(1);
+    }
+    el('line', { x1: sx(Math.PI), y1: LY - 40, x2: sx(Math.PI), y2: LY + 8, stroke: TEXT, 'stroke-width': 1.5, 'stroke-dasharray': '3 3' }, svg);
+    el('text', { x: sx(Math.PI), y: LY - 48, fill: TEXT, 'font-size': 16, 'text-anchor': 'middle', 'font-style': 'italic', 'font-family': 'Newsreader, serif' }, svg).textContent = 'π';
+    const band = el('rect', { y: LY - 10, height: 20, fill: 'rgba(242,178,62,0.15)' }, svg);
+    const lo = el('circle', { cy: LY, r: 7, fill: AMBER }, svg);
+    const hi = el('circle', { cy: LY, r: 7, fill: BLUE }, svg);
+
+    const pts = (n: number, rad: number) =>
+      Array.from({ length: n }, (_, k) => {
+        const a = -Math.PI / 2 + (2 * Math.PI * k) / n;
+        return `${(CX + rad * Math.cos(a)).toFixed(2)},${(CY + rad * Math.sin(a)).toFixed(2)}`;
+      }).join(' ');
+
+    slider(root, 'n', (n) => {
+      set(inner, { points: pts(n, R) });
+      set(outer, { points: pts(n, R / Math.cos(Math.PI / n)) });
+      const a = n * Math.sin(Math.PI / n), b = n * Math.tan(Math.PI / n);
+      set(lo, { cx: sx(a) }); set(hi, { cx: sx(Math.min(b, 3.6)) });
+      set(band, { x: sx(a), width: Math.max(0, sx(Math.min(b, 3.6)) - sx(a)) });
+      out(root, 'n', String(n));
+      out(root, 'lo', a.toFixed(5));
+      out(root, 'hi', b.toFixed(5));
+    }).fire();
+  });
+</script>

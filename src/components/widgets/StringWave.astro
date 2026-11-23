@@ -1,0 +1,87 @@
+---
+// A string pinned at both ends: only whole numbers of half-waves fit. Can play the note.
+import type { Lang } from '../../i18n';
+interface Props { lang: Lang }
+const t = {
+  en: { n: 'Harmonic n', pause: 'Pause', play: 'Play', hear: 'Hear it', nodes: 'nodes', hint: 'Change n. The string can only vibrate in patterns that fit a whole number of half-waves.', label: 'A vibrating string showing a standing wave' },
+  bn: { n: 'হারমোনিক n', pause: 'থামান', play: 'চালান', hear: 'শুনুন', nodes: 'নোড', hint: 'n বদলান। তারটি কেবল সেই ধরনে কাঁপতে পারে, যেখানে পূর্ণসংখ্যক অর্ধ-তরঙ্গ আঁটে।', label: 'একটি কম্পমান তারে স্থির তরঙ্গ' },
+}[Astro.props.lang];
+---
+<figure class="widget" data-widget="string" data-play={t.play} data-pause={t.pause}>
+  <svg viewBox="0 0 680 220" role="img" aria-label={t.label}></svg>
+  <div class="w-controls">
+    <label class="w-control"><span>{t.n} <output data-out="n">1</output></span><input type="range" name="n" min="1" max="6" step="1" value="1" /></label>
+  </div>
+  <div class="w-readouts">
+    <span class="w-chip">λ = 2L/n = <b data-out="lambda"></b> m</span>
+    <span class="w-chip amber">f = n × 110 Hz = <b data-out="f"></b> Hz</span>
+    <span class="w-chip"><b data-out="nodes"></b> {t.nodes}</span>
+    <button type="button" class="w-btn" data-toggle>{t.pause}</button>
+    <button type="button" class="w-btn" data-hear>♪ {t.hear}</button>
+  </div>
+  <figcaption class="w-hint">{t.hint}</figcaption>
+</figure>
+
+<script>
+  import { el, set, slider, out, AMBER, TEXT, DIM, reducedMotion } from '../../lib/plot';
+  document.querySelectorAll<HTMLElement>('[data-widget="string"]').forEach((root) => {
+    const svg = root.querySelector('svg')!;
+    const X0 = 40, X1 = 640, CY = 110, A = 70, L = 0.65;
+    el('rect', { x: X0 - 14, y: CY - 50, width: 12, height: 100, rx: 3, fill: DIM }, svg);
+    el('rect', { x: X1 + 2, y: CY - 50, width: 12, height: 100, rx: 3, fill: DIM }, svg);
+    el('line', { x1: X0, y1: CY, x2: X1, y2: CY, stroke: 'rgba(255,255,255,0.08)', 'stroke-dasharray': '4 6' }, svg);
+    const env1 = el('path', { fill: 'none', stroke: 'rgba(242,178,62,0.18)', 'stroke-width': 1.5 }, svg);
+    const env2 = el('path', { fill: 'none', stroke: 'rgba(242,178,62,0.18)', 'stroke-width': 1.5 }, svg);
+    const str = el('path', { fill: 'none', stroke: AMBER, 'stroke-width': 3, 'stroke-linecap': 'round' }, svg);
+    const nodes = el('g', {}, svg);
+    let n = 1, phase = 0, running = !reducedMotion(), last = 0;
+    const shape = (amp: number) => {
+      let d = '';
+      for (let i = 0; i <= 160; i++) {
+        const u = i / 160;
+        d += `${i ? 'L' : 'M'}${(X0 + u * (X1 - X0)).toFixed(1)},${(CY - amp * Math.sin(n * Math.PI * u)).toFixed(1)}`;
+      }
+      return d;
+    };
+    function setN(v: number) {
+      n = v;
+      set(env1, { d: shape(A) }); set(env2, { d: shape(-A) });
+      nodes.innerHTML = '';
+      for (let k = 0; k <= n; k++) el('circle', { cx: X0 + (k / n) * (X1 - X0), cy: CY, r: 5, fill: TEXT }, nodes);
+      out(root, 'n', String(n));
+      out(root, 'lambda', ((2 * L) / n).toFixed(2));
+      out(root, 'f', String(110 * n));
+      out(root, 'nodes', String(n + 1));
+      if (!running) set(str, { d: shape(A * 0.8) });
+    }
+    function frame(now: number) {
+      if (running) {
+        phase += Math.min(50, now - last) * 0.004 * Math.sqrt(n);
+        set(str, { d: shape(A * Math.cos(phase)) });
+      }
+      last = now;
+      requestAnimationFrame(frame);
+    }
+    slider(root, 'n', setN).fire();
+    if (!running) set(str, { d: shape(A * 0.8) });
+    const toggle = root.querySelector<HTMLButtonElement>('[data-toggle]')!;
+    toggle.textContent = running ? root.dataset.pause! : root.dataset.play!;
+    toggle.addEventListener('click', () => {
+      running = !running;
+      toggle.textContent = running ? root.dataset.pause! : root.dataset.play!;
+    });
+    let ctx: AudioContext | undefined;
+    root.querySelector('[data-hear]')!.addEventListener('click', () => {
+      ctx ??= new AudioContext();
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'triangle';
+      o.frequency.value = 110 * n;
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.6);
+      o.connect(g).connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime + 1.7);
+    });
+    requestAnimationFrame((now) => { last = now; frame(now); });
+  });
+</script>

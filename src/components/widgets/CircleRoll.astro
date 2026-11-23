@@ -1,0 +1,77 @@
+---
+// Roll a circle along the ground: its circumference is always π diameters.
+import type { Lang } from '../../i18n';
+interface Props { lang: Lang }
+const t = {
+  en: { roll: 'Roll', size: 'Radius', play: 'Roll it', hint: 'Move the sliders, or press “Roll it”.', label: 'A circle rolling along a line, unrolling its circumference' },
+  bn: { roll: 'গড়ানো', size: 'ব্যাসার্ধ', play: 'গড়িয়ে দিন', hint: 'স্লাইডার সরান, অথবা “গড়িয়ে দিন” চাপুন।', label: 'একটি বৃত্ত রেখা বরাবর গড়িয়ে তার পরিধি খুলে দিচ্ছে' },
+}[Astro.props.lang];
+---
+<figure class="widget" data-widget="circle">
+  <svg viewBox="0 70 680 220" role="img" aria-label={t.label}></svg>
+  <div class="w-controls">
+    <label class="w-control"><span>{t.roll} <output data-out="t">0%</output></span><input type="range" name="t" min="0" max="1" step="0.001" value="0.35" /></label>
+    <label class="w-control"><span>{t.size} <output data-out="r">r</output></span><input type="range" name="r" min="30" max="80" step="1" value="55" /></label>
+  </div>
+  <div class="w-readouts">
+    <span class="w-chip">d = <b data-out="d"></b></span>
+    <span class="w-chip amber">C = <b data-out="c"></b></span>
+    <span class="w-chip amber">C ÷ d = <b data-out="ratio"></b></span>
+    <button type="button" class="w-btn" data-play>{t.play}</button>
+  </div>
+  <figcaption class="w-hint">{t.hint}</figcaption>
+</figure>
+
+<script>
+  import { el, set, slider, out, fmt, AMBER, TEXT, DIM, GRID, reducedMotion } from '../../lib/plot';
+  document.querySelectorAll<HTMLElement>('[data-widget="circle"]').forEach((root) => {
+    const svg = root.querySelector('svg')!;
+    const G = 240, X0 = 50;
+    let r = 55, t = 0.35;
+    el('line', { x1: 20, y1: G, x2: 660, y2: G, stroke: GRID, 'stroke-width': 2 }, svg);
+    const ticks = el('g', {}, svg);
+    const trail = el('line', { y1: G, y2: G, stroke: AMBER, 'stroke-width': 4, 'stroke-linecap': 'round' }, svg);
+    const circ = el('circle', { fill: 'rgba(242,178,62,0.06)', stroke: TEXT, 'stroke-width': 2 }, svg);
+    const dia = el('line', { stroke: DIM, 'stroke-dasharray': '4 4', 'stroke-width': 1.5 }, svg);
+    const spoke = el('line', { stroke: AMBER, 'stroke-width': 2 }, svg);
+    const dot = el('circle', { r: 6, fill: AMBER }, svg);
+
+    function draw() {
+      const C = 2 * Math.PI * r, d = 2 * r;
+      ticks.innerHTML = '';
+      for (let k = 0; k <= 3; k++) {
+        const x = X0 + k * d;
+        el('line', { x1: x, y1: G - 8, x2: x, y2: G + 8, stroke: DIM, 'stroke-width': 1.5 }, ticks);
+        if (k) el('text', { x, y: G + 26, fill: DIM, 'font-size': 13, 'text-anchor': 'middle', 'font-family': 'Geist Mono, monospace' }, ticks).textContent = `${k}d`;
+      }
+      el('line', { x1: X0 + C, y1: G - 14, x2: X0 + C, y2: G + 14, stroke: AMBER, 'stroke-width': 2 }, ticks);
+      el('text', { x: X0 + C, y: G - 22, fill: AMBER, 'font-size': 13, 'text-anchor': 'middle', 'font-family': 'Geist Mono, monospace' }, ticks).textContent = 'πd';
+      const phi = 2 * Math.PI * t;
+      const cx = X0 + C * t, cy = G - r;
+      set(trail, { x1: X0, x2: cx });
+      set(circ, { cx, cy, r });
+      set(dia, { x1: cx - r, y1: cy, x2: cx + r, y2: cy });
+      const mx = cx - r * Math.sin(phi), my = cy + r * Math.cos(phi);
+      set(spoke, { x1: cx, y1: cy, x2: mx, y2: my });
+      set(dot, { cx: mx, cy: my });
+      out(root, 't', `${Math.round(t * 100)}%`);
+      out(root, 'r', fmt(r / 10, 1));
+      out(root, 'd', fmt(d / 10, 1));
+      out(root, 'c', fmt(C / 10, 2));
+      out(root, 'ratio', (C / d).toFixed(5) + '…');
+    }
+    const ts = slider(root, 't', (v) => { t = v; draw(); });
+    slider(root, 'r', (v) => { r = v; draw(); });
+    root.querySelector('[data-play]')!.addEventListener('click', () => {
+      if (reducedMotion()) { t = 1; ts.set(1); draw(); return; }
+      const start = performance.now();
+      const step = (now: number) => {
+        t = Math.min(1, (now - start) / 2400);
+        ts.set(t); draw();
+        if (t < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    });
+    draw();
+  });
+</script>

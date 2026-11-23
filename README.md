@@ -25,6 +25,8 @@ npm run build    # outputs static files to dist/
 
 **English & Bangla:** English pages live at `/`, Bangla at `/bn/`. Each page file in `src/pages/` holds both languages side by side in a `copy = { en: {...}, bn: {...} }` block; the `src/pages/bn/` files are one-line wrappers that render the same page in Bangla. The EN/বাং button in the nav switches to the same page in the other language.
 
+**Interactive lessons:** the Math & Physics course lives in `src/data/lessons.ts`. Each lesson is a list of steps (English + Bangla text, optional diagram, optional quiz), and each gets a page at `/learn/<slug>/`. Write maths as `$...$` inline or `$$...$$` on its own line; it is typeset with KaTeX when the site builds. The diagrams are in `src/components/widgets/`.
+
 **New video:** copy an entry in `src/data/adventures.ts`, paste the YouTube ID, and fill in the `en` and `bn` text. The thumbnail comes from YouTube automatically.
 
 **Real photos:** drop images in `public/images/` and pass `src="/images/your-photo.jpg"` to any `<Media>` (or set `image` on an adventure).

@@ -1,0 +1,76 @@
+---
+// Walk around the unit circle: cos is how far across, sin is how far up, and sin traces a wave.
+import type { Lang } from '../../i18n';
+interface Props { lang: Lang }
+const t = {
+  en: { angle: 'Angle θ', hint: 'Drag the amber point around the circle, or use the slider.', label: 'Unit circle with a point at angle theta and the sine wave it traces' },
+  bn: { angle: 'কোণ θ', hint: 'অ্যাম্বার বিন্দুটি বৃত্তের চারপাশে টেনে নিন, অথবা স্লাইডার ব্যবহার করুন।', label: 'একক বৃত্তে θ কোণে একটি বিন্দু এবং তার আঁকা সাইন তরঙ্গ' },
+}[Astro.props.lang];
+---
+<figure class="widget" data-widget="trig">
+  <svg viewBox="0 0 680 300" role="img" aria-label={t.label}></svg>
+  <div class="w-controls">
+    <label class="w-control"><span>{t.angle} <output data-out="deg">40°</output></span><input type="range" name="deg" min="0" max="360" step="1" value="40" /></label>
+  </div>
+  <div class="w-readouts">
+    <span class="w-chip">θ = <b data-out="rad"></b> rad</span>
+    <span class="w-chip blue">cos θ = <b data-out="cos"></b></span>
+    <span class="w-chip amber">sin θ = <b data-out="sin"></b></span>
+  </div>
+  <figcaption class="w-hint">{t.hint}</figcaption>
+</figure>
+
+<script>
+  import { el, set, slider, out, fmt, draggable, curve, AMBER, BLUE, TEXT, DIM, GRID } from '../../lib/plot';
+  document.querySelectorAll<HTMLElement>('[data-widget="trig"]').forEach((root) => {
+    const svg = root.querySelector('svg')!;
+    const CX = 140, CY = 150, R = 110;
+    const GX0 = 300, GX1 = 660;
+    const gx = (a: number) => GX0 + (a / (2 * Math.PI)) * (GX1 - GX0);
+    const gy = (v: number) => CY - v * R;
+    // axes
+    el('line', { x1: CX - R - 15, y1: CY, x2: CX + R + 15, y2: CY, stroke: GRID, 'stroke-width': 1.5 }, svg);
+    el('line', { x1: CX, y1: CY - R - 15, x2: CX, y2: CY + R + 15, stroke: GRID, 'stroke-width': 1.5 }, svg);
+    el('line', { x1: GX0, y1: CY, x2: GX1, y2: CY, stroke: GRID, 'stroke-width': 1.5 }, svg);
+    for (const [k, lab] of [[1, 'π/2'], [2, 'π'], [3, '3π/2'], [4, '2π']] as const) {
+      el('text', { x: gx((k * Math.PI) / 2), y: CY + 20, fill: DIM, 'font-size': 12, 'text-anchor': 'middle', 'font-family': 'Geist Mono, monospace' }, svg).textContent = lab;
+    }
+    el('circle', { cx: CX, cy: CY, r: R, fill: 'none', stroke: TEXT, 'stroke-width': 2 }, svg);
+    el('path', { d: curve(Math.sin, 0, 2 * Math.PI, gx, gy), fill: 'none', stroke: 'rgba(242,178,62,0.18)', 'stroke-width': 2 }, svg);
+    const traced = el('path', { fill: 'none', stroke: AMBER, 'stroke-width': 2.5 }, svg);
+    const arc = el('path', { fill: 'none', stroke: DIM, 'stroke-width': 1.5 }, svg);
+    const radius = el('line', { x1: CX, y1: CY, stroke: TEXT, 'stroke-width': 1.5 }, svg);
+    const cosL = el('line', { y1: CY, y2: CY, stroke: BLUE, 'stroke-width': 4, 'stroke-linecap': 'round' }, svg);
+    const sinL = el('line', { stroke: AMBER, 'stroke-width': 4, 'stroke-linecap': 'round' }, svg);
+    const link = el('line', { stroke: 'rgba(242,178,62,0.35)', 'stroke-dasharray': '4 4' }, svg);
+    const gdot = el('circle', { r: 5, fill: AMBER }, svg);
+    const handle = el('circle', { r: 11, fill: AMBER, stroke: '#0C0B0A', 'stroke-width': 3, class: 'handle' }, svg);
+
+    let deg = 40;
+    function draw() {
+      const a = (deg * Math.PI) / 180;
+      const px = CX + R * Math.cos(a), py = CY - R * Math.sin(a);
+      set(radius, { x2: px, y2: py });
+      set(cosL, { x1: CX, x2: px });
+      set(sinL, { x1: px, y1: CY, x2: px, y2: py });
+      set(handle, { cx: px, cy: py });
+      const ar = 28, large = a > Math.PI ? 1 : 0;
+      set(arc, { d: a < 0.01 ? '' : `M${CX + ar},${CY} A${ar},${ar} 0 ${large} 0 ${CX + ar * Math.cos(a)},${CY - ar * Math.sin(a)}` });
+      set(traced, { d: a < 0.001 ? '' : curve(Math.sin, 0, a, gx, gy, Math.max(2, Math.round(deg))) });
+      set(gdot, { cx: gx(a), cy: gy(Math.sin(a)) });
+      set(link, { x1: px, y1: py, x2: gx(a), y2: py });
+      out(root, 'deg', `${deg}°`);
+      out(root, 'rad', fmt(a, 2));
+      out(root, 'cos', fmt(Math.cos(a), 3));
+      out(root, 'sin', fmt(Math.sin(a), 3));
+    }
+    const s = slider(root, 'deg', (v) => { deg = v; draw(); });
+    draggable(svg, handle, (p) => {
+      let a = Math.atan2(-(p.y - CY), p.x - CX);
+      if (a < 0) a += 2 * Math.PI;
+      deg = Math.round((a * 180) / Math.PI) % 361;
+      s.set(deg); draw();
+    });
+    draw();
+  });
+</script>

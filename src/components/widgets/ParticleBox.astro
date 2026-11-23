@@ -1,0 +1,61 @@
+---
+// Particle in a box: allowed waves ψₙ, where it is likely to be found |ψₙ|², and energy levels ∝ n².
+import type { Lang } from '../../i18n';
+interface Props { lang: Lang }
+const t = {
+  en: { n: 'Energy level n', energy: 'energy', nodes: 'nodes inside', levels: 'Energy levels', hint: 'The amber line is ψ, the shaded area is |ψ|², where the particle is likely to be found.', label: 'Wave functions of a particle in a box and its energy levels' },
+  bn: { n: 'শক্তিস্তর n', energy: 'শক্তি', nodes: 'ভেতরের নোড', levels: 'শক্তিস্তর', hint: 'অ্যাম্বার রেখাটি ψ, ছায়া দেওয়া অংশটি |ψ|², যেখানে কণাটিকে পাওয়ার সম্ভাবনা বেশি।', label: 'বাক্সে আটকানো কণার তরঙ্গ ফাংশন ও তার শক্তিস্তর' },
+}[Astro.props.lang];
+---
+<figure class="widget" data-widget="box" data-levels={t.levels}>
+  <svg viewBox="0 0 680 300" role="img" aria-label={t.label}></svg>
+  <div class="w-controls">
+    <label class="w-control"><span>{t.n} <output data-out="n">1</output></span><input type="range" name="n" min="1" max="5" step="1" value="1" /></label>
+  </div>
+  <div class="w-readouts">
+    <span class="w-chip amber">{t.energy}: E = <b data-out="e"></b> E₁</span>
+    <span class="w-chip">{t.nodes}: <b data-out="nodes"></b></span>
+  </div>
+  <figcaption class="w-hint">{t.hint}</figcaption>
+</figure>
+
+<script>
+  import { el, set, slider, out, curve, AMBER, TEXT, DIM, GRID } from '../../lib/plot';
+  document.querySelectorAll<HTMLElement>('[data-widget="box"]').forEach((root) => {
+    const svg = root.querySelector('svg')!;
+    const X0 = 50, X1 = 410, MID = 150, A = 100;
+    const sx = (u: number) => X0 + u * (X1 - X0);
+    el('rect', { x: X0 - 10, y: 30, width: 10, height: 240, fill: DIM }, svg);
+    el('rect', { x: X1, y: 30, width: 10, height: 240, fill: DIM }, svg);
+    el('line', { x1: X0, y1: MID, x2: X1, y2: MID, stroke: GRID, 'stroke-width': 1.5 }, svg);
+    const prob = el('path', { fill: 'rgba(242,178,62,0.22)', stroke: 'none' }, svg);
+    const psi = el('path', { fill: 'none', stroke: AMBER, 'stroke-width': 3 }, svg);
+    const nodes = el('g', {}, svg);
+    // energy ladder
+    const LX0 = 480, LX1 = 640, B = 270, TOP = 40, maxE = 25;
+    const ly = (e: number) => B - (e / maxE) * (B - TOP);
+    el('text', { x: LX0, y: 22, fill: DIM, 'font-size': 12, 'font-family': 'Geist Mono, monospace' }, svg).textContent = root.dataset.levels!;
+    el('line', { x1: LX0 - 10, y1: B, x2: LX0 - 10, y2: TOP - 8, stroke: DIM }, svg);
+    const levels = [1, 2, 3, 4, 5].map((k) => {
+      const line = el('line', { x1: LX0, x2: LX1, y1: ly(k * k), y2: ly(k * k), stroke: TEXT, 'stroke-width': 2 }, svg);
+      const lab = el('text', { x: LX1 + 6, y: ly(k * k) + 4, fill: DIM, 'font-size': 12, 'font-family': 'Geist Mono, monospace' }, svg);
+      lab.textContent = `n=${k}`;
+      return [line, lab] as const;
+    });
+    slider(root, 'n', (n) => {
+      const f = (u: number) => Math.sin(n * Math.PI * u);
+      set(psi, { d: curve(f, 0, 1, sx, (v) => MID - A * v, 300) });
+      set(prob, { d: curve((u) => f(u) ** 2, 0, 1, sx, (v) => MID - A * v, 300) + `L${sx(1)},${MID} L${sx(0)},${MID} Z` });
+      nodes.innerHTML = '';
+      for (let k = 1; k < n; k++) el('circle', { cx: sx(k / n), cy: MID, r: 5, fill: TEXT }, nodes);
+      levels.forEach(([line, lab], i) => {
+        const on = i + 1 === n;
+        set(line, { stroke: on ? AMBER : 'rgba(243,239,232,0.35)', 'stroke-width': on ? 4 : 2 });
+        set(lab, { fill: on ? AMBER : DIM });
+      });
+      out(root, 'n', String(n));
+      out(root, 'e', String(n * n));
+      out(root, 'nodes', String(n - 1));
+    }).fire();
+  });
+</script>

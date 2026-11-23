@@ -1,0 +1,9 @@
+---
+import LessonView from '../../components/LessonView.astro';
+import { lessons } from '../../data/lessons';
+export function getStaticPaths() {
+  return lessons.map((lesson) => ({ params: { lesson: lesson.slug }, props: { lesson } }));
+}
+const { lesson } = Astro.props;
+---
+<LessonView lesson={lesson} />

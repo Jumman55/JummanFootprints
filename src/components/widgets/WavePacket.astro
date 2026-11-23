@@ -1,0 +1,63 @@
+---
+// A wave packet: squeeze it in position and its spread of wavelengths (momentum) grows.
+import type { Lang } from '../../i18n';
+interface Props { lang: Lang }
+const t = {
+  en: { width: 'Packet width Δx', pos: 'Position: where is it?', mom: 'Momentum: which wavelengths?', hint: 'Narrow the packet: the momentum spread on the right gets wider. Their product never drops below the limit.', label: 'A wave packet in position and its spread in momentum' },
+  bn: { width: 'প্যাকেটের প্রস্থ Δx', pos: 'অবস্থান: কোথায় আছে?', mom: 'ভরবেগ: কোন তরঙ্গদৈর্ঘ্য?', hint: 'প্যাকেটটি সরু করুন: ডান দিকে ভরবেগের বিস্তার চওড়া হয়। দুটির গুণফল কখনো সীমার নিচে নামে না।', label: 'অবস্থানে একটি তরঙ্গ প্যাকেট এবং ভরবেগে তার বিস্তার' },
+}[Astro.props.lang];
+---
+<figure class="widget" data-widget="packet" data-pos={t.pos} data-mom={t.mom}>
+  <svg viewBox="0 0 680 240" role="img" aria-label={t.label}></svg>
+  <div class="w-controls">
+    <label class="w-control"><span>{t.width} <output data-out="sx"></output></span><input type="range" name="s" min="0.4" max="3" step="0.05" value="1.2" /></label>
+  </div>
+  <div class="w-readouts">
+    <span class="w-chip amber">Δx = <b data-out="dx"></b></span>
+    <span class="w-chip blue">Δk = <b data-out="dk"></b></span>
+    <span class="w-chip">Δx · Δk = <b data-out="prod"></b> ≥ 0.5</span>
+  </div>
+  <figcaption class="w-hint">{t.hint}</figcaption>
+</figure>
+
+<script>
+  import { el, set, slider, out, curve, AMBER, BLUE, DIM, GRID } from '../../lib/plot';
+  document.querySelectorAll<HTMLElement>('[data-widget="packet"]').forEach((root) => {
+    const svg = root.querySelector('svg')!;
+    const K0 = 5, BASE = 190, A = 140;
+    // Left panel: x in [-8, 8]
+    const lx = (x: number) => 20 + ((x + 8) / 16) * 380;
+    // Right panel: k in [0, 10]
+    const kx = (k: number) => 440 + (k / 10) * 220;
+    const ly = (v: number) => BASE - A * v * 0.5 - 0;
+    el('text', { x: 20, y: 22, fill: DIM, 'font-size': 12, 'font-family': 'Geist Mono, monospace' }, svg).textContent = root.dataset.pos!;
+    el('text', { x: 440, y: 22, fill: DIM, 'font-size': 12, 'font-family': 'Geist Mono, monospace' }, svg).textContent = root.dataset.mom!;
+    const mid = 115;
+    el('line', { x1: 20, y1: mid, x2: 400, y2: mid, stroke: GRID }, svg);
+    el('line', { x1: 440, y1: BASE, x2: 660, y2: BASE, stroke: DIM }, svg);
+    el('text', { x: 660, y: BASE + 18, fill: DIM, 'font-size': 12, 'text-anchor': 'end', 'font-style': 'italic', 'font-family': 'Newsreader, serif' }, svg).textContent = 'k';
+    el('text', { x: 400, y: mid + 70, fill: DIM, 'font-size': 12, 'text-anchor': 'end', 'font-style': 'italic', 'font-family': 'Newsreader, serif' }, svg).textContent = 'x';
+    const envT = el('path', { fill: 'none', stroke: 'rgba(242,178,62,0.35)', 'stroke-dasharray': '4 4' }, svg);
+    const envB = el('path', { fill: 'none', stroke: 'rgba(242,178,62,0.35)', 'stroke-dasharray': '4 4' }, svg);
+    const wave = el('path', { fill: 'none', stroke: AMBER, 'stroke-width': 2.5 }, svg);
+    const mom = el('path', { fill: 'rgba(127,178,229,0.25)', stroke: BLUE, 'stroke-width': 2.5 }, svg);
+    const dxBar = el('line', { y1: mid + 62, y2: mid + 62, stroke: AMBER, 'stroke-width': 3 }, svg);
+    const dkBar = el('line', { y1: BASE + 14, y2: BASE + 14, stroke: BLUE, 'stroke-width': 3 }, svg);
+    slider(root, 's', (s) => {
+      const env = (x: number) => Math.exp(-(x * x) / (4 * s * s));
+      const yA = (v: number) => mid - 60 * v;
+      set(wave, { d: curve((x) => env(x) * Math.cos(K0 * x), -8, 8, lx, yA, 600) });
+      set(envT, { d: curve(env, -8, 8, lx, yA) });
+      set(envB, { d: curve((x) => -env(x), -8, 8, lx, yA) });
+      const sk = 1 / (2 * s);
+      const peak = Math.min(1, 0.9 * s) ; // taller when narrower in k
+      set(mom, { d: curve((k) => peak * Math.exp(-((k - K0) ** 2) / (4 * sk * sk)), 0, 10, kx, (v) => BASE - 150 * v) + `L${kx(10)},${BASE} L${kx(0)},${BASE} Z` });
+      set(dxBar, { x1: lx(-s), x2: lx(s) });
+      set(dkBar, { x1: kx(K0 - sk), x2: kx(K0 + sk) });
+      out(root, 'sx', s.toFixed(2));
+      out(root, 'dx', s.toFixed(2));
+      out(root, 'dk', sk.toFixed(2));
+      out(root, 'prod', (s * sk).toFixed(2));
+    }).fire();
+  });
+</script>

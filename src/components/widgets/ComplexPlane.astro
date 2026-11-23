@@ -1,0 +1,79 @@
+---
+// Drag z around the complex plane; i·z is always z turned a quarter turn.
+import type { Lang } from '../../i18n';
+interface Props { lang: Lang }
+const t = {
+  en: { re: 'Real part a', im: 'Imaginary part b', size: 'size', angle: 'angle', hint: 'Drag z. The blue arrow, i·z, is always z turned 90° anticlockwise; the dashed one is i·i·z = −z.', label: 'Complex plane showing z and i times z' },
+  bn: { re: 'বাস্তব অংশ a', im: 'কাল্পনিক অংশ b', size: 'আকার', angle: 'কোণ', hint: 'z টেনে সরান। নীল তীর i·z সবসময় z-কে ঘড়ির কাঁটার উল্টো দিকে ৯০° ঘোরানো রূপ; ড্যাশ দেওয়াটি i·i·z = −z।', label: 'জটিল তলে z এবং i গুণ z' },
+}[Astro.props.lang];
+---
+<figure class="widget" data-widget="complex">
+  <svg viewBox="0 0 680 360" role="img" aria-label={t.label}></svg>
+  <div class="w-controls">
+    <label class="w-control"><span>{t.re} <output data-out="a"></output></span><input type="range" name="a" min="-4" max="4" step="0.5" value="3" /></label>
+    <label class="w-control"><span>{t.im} <output data-out="b"></output></span><input type="range" name="b" min="-4" max="4" step="0.5" value="1" /></label>
+  </div>
+  <div class="w-readouts">
+    <span class="w-chip amber">z = <b data-out="z"></b></span>
+    <span class="w-chip blue">i·z = <b data-out="iz"></b></span>
+    <span class="w-chip">|z| = <b data-out="abs"></b></span>
+    <span class="w-chip">{t.angle} = <b data-out="arg"></b></span>
+  </div>
+  <figcaption class="w-hint">{t.hint}</figcaption>
+</figure>
+
+<script>
+  import { el, set, slider, out, fmt, draggable, AMBER, BLUE, TEXT, DIM, GRID } from '../../lib/plot';
+  document.querySelectorAll<HTMLElement>('[data-widget="complex"]').forEach((root) => {
+    const svg = root.querySelector('svg')!;
+    const CX = 340, CY = 180, S = 40; // 40px per unit, ±4 vertically, ±8 horizontally
+    const px = (x: number) => CX + x * S, py = (y: number) => CY - y * S;
+    for (let x = -8; x <= 8; x++) el('line', { x1: px(x), y1: py(4.4), x2: px(x), y2: py(-4.4), stroke: GRID }, svg);
+    for (let y = -4; y <= 4; y++) el('line', { x1: px(-8.4), y1: py(y), x2: px(8.4), y2: py(y), stroke: GRID }, svg);
+    el('line', { x1: px(-8.4), y1: CY, x2: px(8.4), y2: CY, stroke: DIM, 'stroke-width': 1.5 }, svg);
+    el('line', { x1: CX, y1: py(4.4), x2: CX, y2: py(-4.4), stroke: DIM, 'stroke-width': 1.5 }, svg);
+    const lab = (x: number, y: number, s: string, fill = DIM) => (el('text', { x, y, fill, 'font-size': 13, 'font-family': 'Geist Mono, monospace' }, svg).textContent = s);
+    lab(px(8.1), CY - 8, 'Re'); lab(CX + 8, py(4.1), 'Im'); lab(px(1) - 4, CY + 18, '1'); lab(CX + 8, py(1) + 4, 'i');
+    const defs = el('defs', {}, svg);
+    for (const [id, c] of [['ha', AMBER], ['hb', BLUE], ['hd', DIM]] as const) {
+      const m = el('marker', { id: `${id}-arrow`, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, defs);
+      el('path', { d: 'M0,0 L10,5 L0,10 z', fill: c }, m);
+    }
+    const arc = el('path', { fill: 'none', stroke: 'rgba(127,178,229,0.6)', 'stroke-width': 1.5, 'stroke-dasharray': '3 4' }, svg);
+    const neg = el('line', { x1: CX, y1: CY, stroke: DIM, 'stroke-width': 2, 'stroke-dasharray': '6 5', 'marker-end': 'url(#hd-arrow)' }, svg);
+    const iz = el('line', { x1: CX, y1: CY, stroke: BLUE, 'stroke-width': 3, 'marker-end': 'url(#hb-arrow)' }, svg);
+    const z = el('line', { x1: CX, y1: CY, stroke: AMBER, 'stroke-width': 3, 'marker-end': 'url(#ha-arrow)' }, svg);
+    const zl = el('text', { fill: AMBER, 'font-size': 16, 'font-style': 'italic', 'font-family': 'Newsreader, serif' }, svg);
+    const izl = el('text', { fill: BLUE, 'font-size': 16, 'font-style': 'italic', 'font-family': 'Newsreader, serif' }, svg);
+    const handle = el('circle', { r: 12, fill: 'rgba(242,178,62,0.25)', stroke: AMBER, 'stroke-width': 2, class: 'handle' }, svg);
+
+    let a = 3, b = 1;
+    const cstr = (x: number, y: number) => {
+      const re = fmt(x, 1).replace(/\.0$/, ''), im = fmt(Math.abs(y), 1).replace(/\.0$/, '');
+      return y < 0 ? `${re} − ${im}i` : `${re} + ${im}i`;
+    };
+    function draw() {
+      set(z, { x2: px(a), y2: py(b) });
+      set(iz, { x2: px(-b), y2: py(a) });
+      set(neg, { x2: px(-a), y2: py(-b) });
+      set(handle, { cx: px(a), cy: py(b) });
+      set(zl, { x: px(a) + 10, y: py(b) - 10 }); zl.textContent = 'z';
+      set(izl, { x: px(-b) + 10, y: py(a) - 10 }); izl.textContent = 'i·z';
+      const r = Math.hypot(a, b) * S * 0.45;
+      const t0 = Math.atan2(b, a);
+      set(arc, { d: r < 1 ? '' : `M${CX + r * Math.cos(t0)},${CY - r * Math.sin(t0)} A${r},${r} 0 0 0 ${CX + r * Math.cos(t0 + Math.PI / 2)},${CY - r * Math.sin(t0 + Math.PI / 2)}` });
+      out(root, 'a', fmt(a, 1)); out(root, 'b', fmt(b, 1));
+      out(root, 'z', cstr(a, b)); out(root, 'iz', cstr(-b, a));
+      out(root, 'abs', fmt(Math.hypot(a, b), 2));
+      out(root, 'arg', `${Math.round((Math.atan2(b, a) * 180) / Math.PI)}°`);
+    }
+    const sa = slider(root, 'a', (v) => { a = v; draw(); });
+    const sb = slider(root, 'b', (v) => { b = v; draw(); });
+    draggable(svg, handle, (p) => {
+      a = Math.max(-4, Math.min(4, Math.round(((p.x - CX) / S) * 2) / 2));
+      b = Math.max(-4, Math.min(4, Math.round((-(p.y - CY) / S) * 2) / 2));
+      sa.set(a); sb.set(b); draw();
+    });
+    draw();
+  });
+</script>

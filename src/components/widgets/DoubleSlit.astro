@@ -1,0 +1,88 @@
+---
+// Waves from two slits overlap: bright where crests meet crests, dark where crests meet troughs.
+import type { Lang } from '../../i18n';
+interface Props { lang: Lang }
+const t = {
+  en: { lambda: 'Wavelength λ', d: 'Slit separation d', pause: 'Pause', play: 'Play', screen: 'brightness on the screen', spacing: 'fringe spacing ∝ λ/d', hint: 'Waves spread from the two slits on the left. The strip on the right shows how bright the screen is.', label: 'Animated waves from two slits interfering, with a brightness pattern on a screen' },
+  bn: { lambda: 'তরঙ্গদৈর্ঘ্য λ', d: 'চিড়ের দূরত্ব d', pause: 'থামান', play: 'চালান', screen: 'পর্দায় উজ্জ্বলতা', spacing: 'ঝালরের ফাঁক ∝ λ/d', hint: 'বাঁ দিকের দুটি চিড় থেকে তরঙ্গ ছড়িয়ে পড়ছে। ডান দিকের ফালিটি দেখায় পর্দা কতটা উজ্জ্বল।', label: 'দুটি চিড় থেকে আসা তরঙ্গের ব্যতিচার এবং পর্দায় উজ্জ্বলতার নকশা' },
+}[Astro.props.lang];
+---
+<figure class="widget" data-widget="slit" data-play={t.play} data-pause={t.pause}>
+  <canvas width="640" height="320" role="img" aria-label={t.label} style="border-radius: 10px; background: #0C0B0A"></canvas>
+  <div class="w-controls">
+    <label class="w-control"><span>{t.lambda} <output data-out="lambda"></output></span><input type="range" name="lambda" min="10" max="40" step="1" value="22" /></label>
+    <label class="w-control"><span>{t.d} <output data-out="d"></output></span><input type="range" name="d" min="20" max="160" step="2" value="70" /></label>
+  </div>
+  <div class="w-readouts">
+    <span class="w-chip amber">{t.spacing} = <b data-out="ratio"></b></span>
+    <button type="button" class="w-btn" data-toggle>{t.pause}</button>
+  </div>
+  <figcaption class="w-hint">{t.hint}</figcaption>
+</figure>
+
+<script>
+  import { slider, out, reducedMotion } from '../../lib/plot';
+  document.querySelectorAll<HTMLElement>('[data-widget="slit"]').forEach((root) => {
+    const canvas = root.querySelector('canvas')!;
+    const ctx = canvas.getContext('2d')!;
+    // Simulate at half resolution, then scale up.
+    const W = 320, H = 160, SCREEN = 296, SRC = 10;
+    const buf = ctx.createImageData(W, H);
+    const off = document.createElement('canvas'); off.width = W; off.height = H;
+    const octx = off.getContext('2d')!;
+    let lambda = 22, d = 70, phase = 0, running = !reducedMotion();
+    let r1 = new Float32Array(W * H), r2 = new Float32Array(W * H);
+    function geometry() {
+      const k = (2 * Math.PI) / (lambda / 2);
+      const y1 = H / 2 - d / 4, y2 = H / 2 + d / 4;
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const i = y * W + x;
+        r1[i] = k * Math.hypot(x - SRC, y - y1);
+        r2[i] = k * Math.hypot(x - SRC, y - y2);
+      }
+      out(root, 'lambda', String(lambda));
+      out(root, 'd', String(d));
+      out(root, 'ratio', (lambda / d).toFixed(2));
+    }
+    function render() {
+      const px = buf.data;
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const i = y * W + x, o = i * 4;
+        if (x >= SCREEN) {
+          // Time-averaged intensity on the screen: 2 + 2cos(Δ).
+          const I = (2 + 2 * Math.cos(r1[y * W + SCREEN] - r2[y * W + SCREEN])) / 4;
+          px[o] = 30 + 212 * I; px[o + 1] = 25 + 153 * I; px[o + 2] = 20 + 42 * I; px[o + 3] = 255;
+          continue;
+        }
+        if (x < SRC) { px[o] = px[o + 1] = px[o + 2] = 18; px[o + 3] = 255; continue; }
+        const v = (Math.cos(r1[i] - phase) + Math.cos(r2[i] - phase)) / 2; // -1..1
+        const pos = Math.max(0, v), neg = Math.max(0, -v);
+        px[o] = 12 + 230 * pos + 10 * neg;
+        px[o + 1] = 11 + 167 * pos + 12 * neg;
+        px[o + 2] = 10 + 52 * pos + 18 * neg;
+        px[o + 3] = 255;
+      }
+      octx.putImageData(buf, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(off, 0, 0, canvas.width, canvas.height);
+      // barrier with two slits
+      ctx.fillStyle = '#8C867E';
+      const s1 = (H / 2 - d / 4) * 2, s2 = (H / 2 + d / 4) * 2;
+      ctx.fillRect(SRC * 2 - 3, 0, 6, s1 - 6); ctx.fillRect(SRC * 2 - 3, s1 + 6, 6, s2 - s1 - 12); ctx.fillRect(SRC * 2 - 3, s2 + 6, 6, canvas.height);
+      ctx.fillStyle = '#F3EFE8'; ctx.fillRect(SCREEN * 2 - 2, 0, 2, canvas.height);
+    }
+    let visible = true;
+    new IntersectionObserver(([e]) => (visible = e.isIntersecting)).observe(canvas);
+    function loop() {
+      if (running && visible) { phase += 0.18; render(); }
+      requestAnimationFrame(loop);
+    }
+    slider(root, 'lambda', (v) => { lambda = v; geometry(); render(); });
+    slider(root, 'd', (v) => { d = v; geometry(); render(); });
+    geometry(); render();
+    const toggle = root.querySelector<HTMLButtonElement>('[data-toggle]')!;
+    toggle.textContent = running ? root.dataset.pause! : root.dataset.play!;
+    toggle.addEventListener('click', () => { running = !running; toggle.textContent = running ? root.dataset.pause! : root.dataset.play!; });
+    requestAnimationFrame(loop);
+  });
+</script>

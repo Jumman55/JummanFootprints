@@ -1,0 +1,69 @@
+---
+// Secant line on y = x² that becomes the tangent as h shrinks.
+import type { Lang } from '../../i18n';
+interface Props { lang: Lang }
+const t = {
+  en: { a: 'Point a', h: 'Gap h', secant: 'secant slope', tangent: 'tangent slope', hint: 'Drag the amber point along the curve, then shrink h towards 0.', label: 'Graph of y equals x squared with a secant line approaching the tangent' },
+  bn: { a: 'বিন্দু a', h: 'ফাঁক h', secant: 'ছেদক রেখার ঢাল', tangent: 'স্পর্শকের ঢাল', hint: 'অ্যাম্বার বিন্দুটি বক্ররেখা বরাবর টানুন, তারপর h ছোট করে ০-এর দিকে নিন।', label: 'y = x² লেখচিত্রে একটি ছেদক রেখা ধীরে ধীরে স্পর্শক হয়ে যাচ্ছে' },
+}[Astro.props.lang];
+---
+<figure class="widget" data-widget="derivative">
+  <svg viewBox="0 0 680 340" role="img" aria-label={t.label}></svg>
+  <div class="w-controls">
+    <label class="w-control"><span>{t.a} <output data-out="a"></output></span><input type="range" name="a" min="-0.5" max="2.5" step="0.01" value="1" /></label>
+    <label class="w-control"><span>{t.h} <output data-out="h"></output></span><input type="range" name="h" min="0.01" max="1.5" step="0.01" value="1" /></label>
+  </div>
+  <div class="w-readouts">
+    <span class="w-chip amber">{t.secant} = <b data-out="sec"></b></span>
+    <span class="w-chip blue">{t.tangent} = <b data-out="tan"></b></span>
+  </div>
+  <figcaption class="w-hint">{t.hint}</figcaption>
+</figure>
+
+<script>
+  import { el, set, slider, out, fmt, draggable, curve, AMBER, BLUE, TEXT, DIM, GRID } from '../../lib/plot';
+  document.querySelectorAll<HTMLElement>('[data-widget="derivative"]').forEach((root) => {
+    const svg = root.querySelector('svg')!;
+    const X0 = -1, X1 = 3.2, Y0 = -1, Y1 = 9;
+    const sx = (x: number) => 40 + ((x - X0) / (X1 - X0)) * 610;
+    const sy = (y: number) => 320 - ((y - Y0) / (Y1 - Y0)) * 300;
+    const f = (x: number) => x * x;
+    for (let x = -1; x <= 3; x++) el('line', { x1: sx(x), y1: sy(Y0), x2: sx(x), y2: sy(Y1), stroke: GRID }, svg);
+    for (let y = 0; y <= 9; y += 2) el('line', { x1: sx(X0), y1: sy(y), x2: sx(X1), y2: sy(y), stroke: GRID }, svg);
+    el('line', { x1: sx(X0), y1: sy(0), x2: sx(X1), y2: sy(0), stroke: DIM }, svg);
+    el('line', { x1: sx(0), y1: sy(Y0), x2: sx(0), y2: sy(Y1), stroke: DIM }, svg);
+    el('text', { x: sx(2.75), y: sy(8.4), fill: TEXT, 'font-size': 16, 'font-style': 'italic', 'font-family': 'Newsreader, serif' }, svg).textContent = 'y = x²';
+    const clip = el('clipPath', { id: 'dclip' }, svg);
+    el('rect', { x: sx(X0), y: sy(Y1), width: sx(X1) - sx(X0), height: sy(Y0) - sy(Y1) }, clip);
+    el('path', { d: curve(f, X0, 3.0, sx, sy), fill: 'none', stroke: TEXT, 'stroke-width': 2.5 }, svg);
+    const tangent = el('line', { stroke: BLUE, 'stroke-width': 2, 'stroke-dasharray': '6 5', 'clip-path': 'url(#dclip)' }, svg);
+    const secant = el('line', { stroke: AMBER, 'stroke-width': 2.5, 'clip-path': 'url(#dclip)' }, svg);
+    const run = el('line', { stroke: DIM, 'stroke-dasharray': '3 3' }, svg);
+    const rise = el('line', { stroke: DIM, 'stroke-dasharray': '3 3' }, svg);
+    const q = el('circle', { r: 6, fill: TEXT }, svg);
+    const p = el('circle', { r: 11, fill: AMBER, stroke: '#0C0B0A', 'stroke-width': 3, class: 'handle' }, svg);
+
+    let a = 1, h = 1;
+    const line = (node: SVGLineElement, m: number, x: number) =>
+      set(node, { x1: sx(X0), y1: sy(f(x) + m * (X0 - x)), x2: sx(X1), y2: sy(f(x) + m * (X1 - x)) });
+    function draw() {
+      const m = (f(a + h) - f(a)) / h;
+      line(secant, m, a);
+      line(tangent, 2 * a, a);
+      set(p, { cx: sx(a), cy: sy(f(a)) });
+      set(q, { cx: sx(a + h), cy: sy(f(a + h)) });
+      set(run, { x1: sx(a), y1: sy(f(a)), x2: sx(a + h), y2: sy(f(a)) });
+      set(rise, { x1: sx(a + h), y1: sy(f(a)), x2: sx(a + h), y2: sy(f(a + h)) });
+      out(root, 'a', fmt(a)); out(root, 'h', fmt(h));
+      out(root, 'sec', fmt(m, 3)); out(root, 'tan', fmt(2 * a, 3));
+    }
+    const sa = slider(root, 'a', (v) => { a = v; draw(); });
+    slider(root, 'h', (v) => { h = v; draw(); });
+    draggable(svg, p, (pt) => {
+      a = Math.max(-0.5, Math.min(2.5, X0 + ((pt.x - 40) / 610) * (X1 - X0)));
+      a = Math.round(a * 100) / 100;
+      sa.set(a); draw();
+    });
+    draw();
+  });
+</script>
