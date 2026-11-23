@@ -1,5 +1,7 @@
 # Jumman Footprints
 
+My personal portfolio website.
+
 Static website built with [Astro](https://astro.build) from the "Jumman Footprints — Website V1" design.
 
 ## Run it
