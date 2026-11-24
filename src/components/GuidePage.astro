@@ -1,0 +1,92 @@
+---
+// A single travel guide. Used by /guides/[slug] and /bn/guides/[slug].
+import Base from '../layouts/Base.astro';
+import Media from './Media.astro';
+import VideoCard from './VideoCard.astro';
+import { videos, ytThumb } from '../data/adventures';
+import type { Guide } from '../data/guides';
+import { getLang, localize, digits } from '../i18n';
+
+interface Props { guide: Guide }
+const { guide: g } = Astro.props;
+const lang = getLang(Astro.url);
+const l = (p: string) => localize(p, lang);
+const related = g.videos.map((s) => videos.find((v) => v.slug === s)).filter((v) => !!v);
+const first = related[0];
+const coverSrc = g.cover ?? (first ? ytThumb(first.youtubeId) : undefined);
+const coverFallback = !g.cover && first ? ytThumb(first.youtubeId, 'hqdefault') : undefined;
+const copy = {
+  en: {
+    back: '← All guides', inside: 'What’s inside', get: 'Get the guide', en: 'Download PDF (English)', bn: 'Download PDF (Bangla)',
+    soon: 'Coming soon', soonText: 'This guide is being written. Subscribe to the newsletter and you’ll hear the moment it’s ready.',
+    notify: 'Tell me when it’s ready', films: 'The films', pages: 'pages', free: 'Free download',
+  },
+  bn: {
+    back: '← সব গাইড', inside: 'গাইডে যা থাকছে', get: 'গাইডটি নিন', en: 'PDF ডাউনলোড (ইংরেজি)', bn: 'PDF ডাউনলোড (বাংলা)',
+    soon: 'শিগগিরই আসছে', soonText: 'গাইডটি লেখা হচ্ছে। নিউজলেটারে সাবস্ক্রাইব করুন, তৈরি হওয়ামাত্র জানতে পারবেন।',
+    notify: 'তৈরি হলে জানাবেন', films: 'ফিল্মগুলো', pages: 'পৃষ্ঠা', free: 'বিনামূল্যে ডাউনলোড',
+  },
+}[lang];
+const ready = !!(g.pdf?.en || g.pdf?.bn);
+---
+<Base title={`${g.title[lang]} — ${lang === 'bn' ? 'জুম্মান' : 'Jumman'}`} active="guides" description={g.summary[lang]} image={coverSrc}>
+  <div class="container page page-tight" style="gap: 64px">
+    <div class="top">
+      <div class="cover"><Media label={g.title[lang]} ratio="16 / 9" radius="20px" src={coverSrc} fallback={coverFallback} alt="" eager /></div>
+      <div class="stack info">
+        <a href={l('/guides/')} class="back-link">{copy.back}</a>
+        <div class="meta">{g.place[lang]}</div>
+        <h1>{g.title[lang]}</h1>
+        <p class="lede">{g.summary[lang]}</p>
+        <dl class="facts">{g.facts.map((f) => <div><dt>{f.label[lang]}</dt><dd>{f.value[lang]}</dd></div>)}</dl>
+
+        <div class="panel get">
+          {ready ? (
+            <>
+              <h2 class="label">{copy.get}</h2>
+              <span class="dim" style="font-size: 14px">{copy.free}{g.pages ? ` · ${digits(g.pages, lang)} ${copy.pages}` : ''}</span>
+              <div class="btns">
+                {g.pdf?.en && <a href={g.pdf.en} class="btn btn-primary" download>{copy.en} ↓</a>}
+                {g.pdf?.bn && <a href={g.pdf.bn} class="btn" download>{copy.bn} ↓</a>}
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 class="label">{copy.soon}</h2>
+              <p class="muted" style="font-size: 16px; line-height: 1.6">{copy.soonText}</p>
+              <a href={l('/') + '#newsletter'} class="btn btn-primary" style="align-self: flex-start">{copy.notify}</a>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <section class="stack" style="gap: 18px; max-width: 760px">
+      <h2 class="label">{copy.inside}</h2>
+      <ul class="row-list inside">{g.inside.map((x) => <li><span class="amber" aria-hidden="true">✓</span><span>{x[lang]}</span></li>)}</ul>
+    </section>
+
+    {related.length > 0 && (
+      <section class="stack" style="gap: 28px">
+        <div class="section-head"><h2 class="h-section">{copy.films}</h2></div>
+        <div class="grid-auto">{related.map((v) => <VideoCard video={v!} />)}</div>
+      </section>
+    )}
+  </div>
+</Base>
+
+<style>
+  .top { display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start; }
+  .cover { flex: 1 1 380px; max-width: 520px; min-width: 0; }
+  .info { flex: 999 1 440px; min-width: 0; gap: 18px; }
+  .info h1 { font-size: clamp(34px, 5vw, 56px); font-weight: 500; letter-spacing: -.03em; line-height: 1.08; }
+  .facts { margin: 4px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 16px; overflow: hidden; }
+  .facts > div { background: var(--ground); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+  .facts dt { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+  :global(html[lang='bn']) .facts dt { letter-spacing: 0; font-size: 13px; }
+  .facts dd { margin: 0; font-size: 16px; }
+  .get { padding: 24px; display: flex; flex-direction: column; gap: 12px; border-radius: 18px; margin-top: 6px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 10px; }
+  .inside { margin: 0; padding: 0; list-style: none; }
+  .inside li { display: flex; gap: 14px; padding: 14px 0; font-size: 17px; line-height: 1.5; }
+</style>

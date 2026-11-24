@@ -13,12 +13,18 @@ export const site = {
   newsletterAction: '',
 };
 
-export const navLinks = [
+// Every page that appears in the footer, in order.
+export const footerLinks = [
   { id: 'adventures', href: '/adventures/' },
+  { id: 'gear', href: '/gear/' },
+  { id: 'guides', href: '/guides/' },
   { id: 'learn', href: '/learn/' },
   { id: 'now', href: '/now/' },
   { id: 'journal', href: '/journal/' },
   { id: 'about', href: '/about/' },
 ] as const;
 
-export type NavId = 'home' | (typeof navLinks)[number]['id'];
+// The header shows these (Journal lives in the footer to keep the header short).
+export const navLinks = footerLinks.filter((l) => l.id !== 'journal');
+
+export type NavId = 'home' | (typeof footerLinks)[number]['id'];

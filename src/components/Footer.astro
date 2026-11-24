@@ -1,5 +1,5 @@
 ---
-import { site, navLinks } from '../data/site';
+import { site, footerLinks } from '../data/site';
 import { getLang, localize, ui } from '../i18n';
 const lang = getLang(Astro.url);
 const t = ui[lang];
@@ -13,7 +13,7 @@ const t = ui[lang];
       </div>
       <nav aria-label="Footer" class="col">
         <div class="eyebrow col-head">{t.explore}</div>
-        {navLinks.map((l) => <a href={localize(l.href, lang)}>{t.nav[l.id]}</a>)}
+        {footerLinks.map((l) => <a href={localize(l.href, lang)}>{t.nav[l.id]}</a>)}
       </nav>
       <div class="col">
         <div class="eyebrow col-head">{t.elsewhere}</div>

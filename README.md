@@ -27,6 +27,10 @@ npm run build    # outputs static files to dist/
 
 **Interactive lessons:** the Math & Physics course lives in `src/data/lessons.ts`. Each lesson is a list of steps (English + Bangla text, optional diagram, optional quiz), and each gets a page at `/learn/<slug>/`. Write maths as `$...$` inline or `$$...$$` on its own line; it is typeset with KaTeX when the site builds. The diagrams are in `src/components/widgets/`.
 
+**Gear:** edit `src/data/gear.ts`. Put photos in `public/images/gear/` and set `image: '/images/gear/name.jpg'`; add a `link` for the product page. Items marked `placeholder: true` show dimmed until you fill them in.
+
+**Travel guides:** edit `src/data/guides.ts`. When a PDF is ready, drop it in `public/guides/` and set `pdf: { en: '/guides/file.pdf', bn: '/guides/file-bn.pdf' }`. The guide page then shows download buttons instead of "Coming soon".
+
 **New video:** copy an entry in `src/data/adventures.ts`, paste the YouTube ID, and fill in the `en` and `bn` text. The thumbnail comes from YouTube automatically.
 
 **Real photos:** drop images in `public/images/` and pass `src="/images/your-photo.jpg"` to any `<Media>` (or set `image` on an adventure).

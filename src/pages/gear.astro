@@ -1,0 +1,81 @@
+---
+import Base from '../layouts/Base.astro';
+import Media from '../components/Media.astro';
+import { gear, categories } from '../data/gear';
+import { videos } from '../data/adventures';
+import { getLang, localize } from '../i18n';
+
+const lang = getLang(Astro.url);
+const l = (p: string) => localize(p, lang);
+const copy = {
+  en: {
+    title: 'Gear — Jumman', desc: 'The camera, drone and camping gear behind the Jumman Footprints films.',
+    eyebrow: 'Gear', h1: 'What I carry.',
+    lede: 'Everything I film with and sleep in. People ask in the comments, so here it is in one place, with the films each piece was used in.',
+    seen: 'Seen in', product: 'Product page', note: 'Some links may be affiliate links: if you buy through them I may earn a small commission, at no extra cost to you.',
+  },
+  bn: {
+    title: 'সরঞ্জাম — জুম্মান', desc: 'জুম্মান ফুটপ্রিন্টস ফিল্মের পেছনের ক্যামেরা, ড্রোন আর ক্যাম্পিং সরঞ্জাম।',
+    eyebrow: 'সরঞ্জাম', h1: 'যা সাথে নিই।',
+    lede: 'যা দিয়ে শুট করি আর যার ভেতরে ঘুমাই, সব। কমেন্টে অনেকেই জানতে চান, তাই এক জায়গায় দিলাম, সাথে কোন ফিল্মে কোনটা ব্যবহার হয়েছে।',
+    seen: 'যেখানে দেখবেন', product: 'পণ্যের পাতা', note: 'কিছু লিংক অ্যাফিলিয়েট লিংক হতে পারে: এর মাধ্যমে কিনলে আমি সামান্য কমিশন পেতে পারি, আপনার কোনো বাড়তি খরচ ছাড়াই।',
+  },
+}[lang];
+const hasAffiliate = gear.some((g) => g.affiliate);
+const byCat = categories.map((c) => ({ ...c, items: gear.filter((g) => g.category === c.id) })).filter((c) => c.items.length);
+const videoBySlug = (s: string) => videos.find((v) => v.slug === s);
+---
+<Base title={copy.title} active="gear" description={copy.desc}>
+  <div class="container page" style="gap: 64px">
+    <header class="stack" style="gap: 16px; max-width: 760px">
+      <div class="eyebrow">{copy.eyebrow}</div>
+      <h1 class="display">{copy.h1}</h1>
+      <p class="lede">{copy.lede}</p>
+      <nav class="jump" aria-label={copy.eyebrow}>
+        {byCat.map((c) => <a href={`#${c.id}`} class="tag">{c.title[lang]}</a>)}
+      </nav>
+    </header>
+
+    {byCat.map((c) => (
+      <section id={c.id} class="stack" style="gap: 24px">
+        <div class="section-head">
+          <h2 class="h-section">{c.title[lang]}</h2>
+          <span class="muted" style="font-size: 15px">{c.blurb[lang]}</span>
+        </div>
+        <div class="grid-auto">
+          {c.items.map((g) => (
+            <article class:list={['panel', 'item', { ph: g.placeholder }]}>
+              <Media label={g.name} ratio="4 / 3" radius="14px" src={g.image} />
+              <h3 class="name">{g.name}</h3>
+              <p class="muted note">{g.note[lang]}</p>
+              {g.videos?.length ? (
+                <div class="seen">
+                  <span class="meta">{copy.seen}</span>
+                  {g.videos.map(videoBySlug).filter(Boolean).map((v) => <a href={l(`/adventures/${v!.slug}/`)}>{v!.title[lang]}</a>)}
+                </div>
+              ) : null}
+              {g.link && <a href={g.link} class="pill buy" rel={g.affiliate ? 'sponsored noopener' : 'noopener'} target="_blank">{copy.product} ↗</a>}
+            </article>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    {hasAffiliate && <p class="dim" style="font-size: 14px; max-width: 680px">{copy.note}</p>}
+  </div>
+</Base>
+
+<style>
+  .jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .jump a { min-height: 36px; display: inline-flex; align-items: center; }
+  .jump a:hover { border-color: var(--amber); color: var(--amber); }
+  section { scroll-margin-top: 100px; }
+  .item { padding: 16px; display: flex; flex-direction: column; gap: 12px; border-radius: 18px; }
+  .item.ph { opacity: .55; }
+  .name { font-size: 21px; font-weight: 500; letter-spacing: -.01em; margin-top: 4px; }
+  .note { font-size: 16px; line-height: 1.6; }
+  .seen { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--hairline-soft); padding-top: 12px; }
+  .seen a { font-size: 15px; color: var(--muted); }
+  .seen a:hover { color: var(--amber); }
+  .buy { align-self: flex-start; margin-top: auto; }
+</style>

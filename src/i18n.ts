@@ -42,7 +42,7 @@ export function fullDate(iso: string, lang: Lang): string {
 /** Shared interface text (nav, footer, buttons). Page copy lives next to each page's markup. */
 export const ui = {
   en: {
-    nav: { adventures: 'Adventures', learn: 'Learn', now: 'Now', journal: 'Journal', about: 'About' },
+    nav: { adventures: 'Adventures', gear: 'Gear', guides: 'Guides', learn: 'Learn', now: 'Now', journal: 'Journal', about: 'About' },
     tagline: 'Footprints',
     homeLabel: 'Jumman Footprints, home',
     search: 'Search (coming soon)',
@@ -68,7 +68,7 @@ export const ui = {
     tags: { all: 'All', overnight: '#overnight', summit: '#summit', hiking: '#hiking', city: '#city', film: '#film', expedition: '#expedition' } as Record<string, string>,
   },
   bn: {
-    nav: { adventures: 'অভিযান', learn: 'শিখুন', now: 'এখন', journal: 'জার্নাল', about: 'পরিচিতি' },
+    nav: { adventures: 'অভিযান', gear: 'সরঞ্জাম', guides: 'গাইড', learn: 'শিখুন', now: 'এখন', journal: 'জার্নাল', about: 'পরিচিতি' },
     tagline: 'ফুটপ্রিন্টস',
     homeLabel: 'জুম্মান ফুটপ্রিন্টস, হোম',
     search: 'খুঁজুন (শিগগিরই আসছে)',
