@@ -38,11 +38,11 @@ const copy = {
       <a href={l('/adventures/')} class="back-link">{copy.back}</a>
       <div class="tags">{v.tags.map((tg, k) => <span class:list={['tag', { 'tag-on': k === 0 }]}>{t.tags[tg]}</span>)}</div>
       <h1 style="font-size: clamp(34px, 5.5vw, 64px); font-weight: 500; letter-spacing: -.03em; line-height: 1.08; max-width: 980px">{v.title[lang]}</h1>
-      <p lang={lang === 'en' ? 'bn' : 'en'} class="muted" style="font-size: clamp(17px, 2vw, 21px)">{v.title[lang === 'en' ? 'bn' : 'en']}</p>
+      {v.title.en !== v.title.bn && <p lang={lang === 'en' ? 'bn' : 'en'} class="muted" style="font-size: clamp(17px, 2vw, 21px)">{v.title[lang === 'en' ? 'bn' : 'en']}</p>}
       <dl class="facts">
         <div><dt>{copy.date}</dt><dd>{fullDate(v.date, lang)}</dd></div>
-        <div><dt>{copy.place}</dt><dd>{v.place[lang]}</dd></div>
-        <div><dt>{copy.length}</dt><dd>{digits(v.duration, lang)}</dd></div>
+        {v.place?.[lang] && <div><dt>{copy.place}</dt><dd>{v.place[lang]}</dd></div>}
+        {v.duration && <div><dt>{copy.length}</dt><dd>{digits(v.duration, lang)}</dd></div>}
         {v.facts?.map((f) => <div><dt>{f.label[lang]}</dt><dd>{f.value[lang]}</dd></div>)}
       </dl>
     </header>
@@ -54,7 +54,7 @@ const copy = {
         </button>
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between">
-        <span class="dim" style="font-size: 14px">{v.place[lang]}</span>
+        <span class="dim" style="font-size: 14px">{v.place?.[lang] ?? ''}</span>
         <a href={ytWatch(v.youtubeId)} class="pill" rel="noopener" target="_blank">{t.watchOnYouTube} ↗</a>
       </div>
     </section>

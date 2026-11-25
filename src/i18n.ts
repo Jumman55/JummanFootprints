@@ -2,22 +2,38 @@
 export type Lang = 'en' | 'bn';
 export const langs: Lang[] = ['en', 'bn'];
 
-export function getLang(url: URL): Lang {
-  return url.pathname === '/bn' || url.pathname.startsWith('/bn/') ? 'bn' : 'en';
+// The site may live under a sub-path (e.g. username.github.io/JummanFootprints/). BASE is '' at a domain root.
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+/** Prefix a site path ("/gear/") with the base path. Leaves full URLs, mailto: and #anchors alone. */
+export function withBase(path: string): string {
+  return path.startsWith('/') && !path.startsWith('//') ? BASE + path : path;
 }
 
-/** Turn an English path ("/about/") into the path for `lang` ("/bn/about/"). */
+/** The page path without the base path, e.g. "/bn/about/". */
+const pagePath = (url: URL) => {
+  const p = url.pathname;
+  return BASE && p.startsWith(BASE) ? p.slice(BASE.length) || '/' : p;
+};
+
+export function getLang(url: URL): Lang {
+  const p = pagePath(url);
+  return p === '/bn' || p.startsWith('/bn/') ? 'bn' : 'en';
+}
+
+/** Turn an English path ("/about/") into the link for `lang` ("/bn/about/"), including the base path. */
 export function localize(path: string, lang: Lang): string {
-  if (lang === 'en' || /^(https?:|mailto:|#)/.test(path)) return path;
-  return path === '/' ? '/bn/' : `/bn${path}`;
+  if (/^(https?:|mailto:|#)/.test(path)) return path;
+  if (lang === 'en') return withBase(path);
+  return withBase(path === '/' ? '/bn/' : `/bn${path}`);
 }
 
 /** The same page in the other language. */
 export function switchPath(url: URL): string {
-  const p = url.pathname;
-  if (/^\/(bn\/)?404/.test(p)) return getLang(url) === 'bn' ? '/' : '/bn/';
-  if (getLang(url) === 'bn') return p.replace(/^\/bn(\/|$)/, '/');
-  return p === '/' ? '/bn/' : `/bn${p}`;
+  const p = pagePath(url);
+  if (/^\/(bn\/)?404/.test(p)) return withBase(getLang(url) === 'bn' ? '/' : '/bn/');
+  if (getLang(url) === 'bn') return withBase(p.replace(/^\/bn(\/|$)/, '/'));
+  return withBase(p === '/' ? '/bn/' : `/bn${p}`);
 }
 
 const bnDigitMap = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];

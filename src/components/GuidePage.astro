@@ -5,7 +5,7 @@ import Media from './Media.astro';
 import VideoCard from './VideoCard.astro';
 import { videos, ytThumb } from '../data/adventures';
 import type { Guide } from '../data/guides';
-import { getLang, localize, digits } from '../i18n';
+import { getLang, localize, digits, withBase } from '../i18n';
 
 interface Props { guide: Guide }
 const { guide: g } = Astro.props;
@@ -46,8 +46,8 @@ const ready = !!(g.pdf?.en || g.pdf?.bn);
               <h2 class="label">{copy.get}</h2>
               <span class="dim" style="font-size: 14px">{copy.free}{g.pages ? ` · ${digits(g.pages, lang)} ${copy.pages}` : ''}</span>
               <div class="btns">
-                {g.pdf?.en && <a href={g.pdf.en} class="btn btn-primary" download>{copy.en} ↓</a>}
-                {g.pdf?.bn && <a href={g.pdf.bn} class="btn" download>{copy.bn} ↓</a>}
+                {g.pdf?.en && <a href={withBase(g.pdf.en)} class="btn btn-primary" download>{copy.en} ↓</a>}
+                {g.pdf?.bn && <a href={withBase(g.pdf.bn)} class="btn" download>{copy.bn} ↓</a>}
               </div>
             </>
           ) : (

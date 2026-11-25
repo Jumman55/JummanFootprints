@@ -4,8 +4,20 @@
     {
       "name": "dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 4321
+    },
+    {
+      "name": "preview-subpath",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "BASE_PATH=/JummanFootprints npx astro preview --port 4330"
+      ],
+      "port": 4330
     }
   ]
 }

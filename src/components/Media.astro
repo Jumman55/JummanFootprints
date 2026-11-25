@@ -10,7 +10,9 @@ interface Props {
   alt?: string;
   eager?: boolean;
 }
-const { label, ratio = '16 / 9', play = false, radius = '16px', src, fallback, alt, eager = false } = Astro.props;
+import { withBase } from '../i18n';
+const { label, ratio = '16 / 9', play = false, radius = '16px', fallback, alt, eager = false } = Astro.props;
+const src = Astro.props.src ? withBase(Astro.props.src) : undefined;
 ---
 <div
   class:list={['media', { 'has-img': !!src }]}

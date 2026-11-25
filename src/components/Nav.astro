@@ -1,6 +1,7 @@
 ---
 import { site, navLinks, type NavId } from '../data/site';
 import { getLang, localize, switchPath, ui } from '../i18n';
+import Search from './Search.astro';
 interface Props { active: NavId }
 const { active } = Astro.props;
 const lang = getLang(Astro.url);
@@ -19,9 +20,7 @@ const other = switchPath(Astro.url);
       ))}
     </div>
     <div class="tools">
-      <button type="button" class="tool icon" aria-label={t.search} title={t.search} disabled>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4 4" /></svg>
-      </button>
+      <Search />
       <a href={other} class="tool lang" aria-label={t.switchLabel} hreflang={lang === 'en' ? 'bn' : 'en'} data-lang-switch={lang === 'en' ? 'bn' : 'en'}>
         <span class:list={{ cur: lang === 'en' }} lang="en">EN</span>
         <span aria-hidden="true">/</span>
@@ -55,7 +54,6 @@ const other = switchPath(Astro.url);
   .link.on { color: var(--amber); }
   .tools { display: flex; align-items: center; gap: 8px; }
   .tool { display: inline-flex; height: 44px; align-items: center; justify-content: center; gap: 6px; padding: 0 12px; background: transparent; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; color: var(--dim); font-family: var(--font-mono); font-size: 12px; }
-  .tool.icon { width: 44px; padding: 0; cursor: not-allowed; opacity: .6; }
   .lang { cursor: pointer; }
   .lang:hover { border-color: var(--amber); color: var(--muted); }
   .lang .cur { color: var(--amber); font-weight: 600; }

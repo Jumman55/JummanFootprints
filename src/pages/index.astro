@@ -80,9 +80,9 @@ const socials = [
 ---
 <Base title={copy.title} active="home" image={ytThumb(hero.youtubeId)}>
   {lang === 'en' && (
-    <script is:inline>
+    <script is:inline define:vars={{ bnHome: localize('/', 'bn') }}>
       // Send returning visitors who chose Bangla straight to the Bangla home page.
-      try { if (localStorage.getItem('lang') === 'bn') location.replace('/bn/'); } catch (e) {}
+      try { if (localStorage.getItem('lang') === 'bn') location.replace(bnHome); } catch (e) {}
     </script>
   )}
   <section class="container hero">
@@ -106,7 +106,7 @@ const socials = [
   <section class="container stack" style="gap: 20px; padding-bottom: 96px">
     <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap">
       <div class="eyebrow eyebrow-amber">{copy.latestVlog}</div>
-      <div class="meta">{hero.place[lang]}</div>
+      <div class="meta">{hero.place?.[lang] ?? ''}</div>
     </div>
     <a href={l(`/adventures/${hero.slug}/`)} class="hero-video">
       <Media label={hero.title[lang]} ratio="2.39 / 1" play eager src={ytThumb(hero.youtubeId)} fallback={ytThumb(hero.youtubeId, 'hqdefault')} alt="" />
@@ -118,7 +118,7 @@ const socials = [
     <div style="display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: flex-end">
       <div class="stack" style="gap: 8px; max-width: 760px">
         <h2 style="font-size: clamp(26px, 3.4vw, 40px); font-weight: 500; letter-spacing: -.02em; line-height: 1.15">{hero.title[lang]}</h2>
-        <div class="muted" style="font-size: 16px">{fullDate(hero.date, lang)} · {hero.place[lang]}</div>
+        <div class="muted" style="font-size: 16px">{fullDate(hero.date, lang)}{hero.place?.[lang] ? ` · ${hero.place[lang]}` : ''}</div>
       </div>
       <div style="display: flex; gap: 8px; flex-wrap: wrap">
         {socials.map((s) => <a href={s.href} class="pill" rel="noopener" target="_blank">{s.label}</a>)}

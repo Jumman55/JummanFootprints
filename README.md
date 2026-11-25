@@ -37,6 +37,18 @@ npm run build    # outputs static files to dist/
 **YouTube:** set `youtubeId` at the top of `src/pages/adventures/drakensberg.astro`. The video only loads when someone presses play.
 **Newsletter:** set `newsletterAction` in `site.ts` to your provider's form URL (Buttondown, ConvertKit, …).
 
-## Deploy
+## Publishing and automatic YouTube updates
 
-`npm run build` makes a plain static site in `dist/`, which works on Netlify, Vercel, Cloudflare Pages or GitHub Pages. Before deploying, set `site` in `astro.config.mjs` to your domain.
+The site is published on **GitHub Pages** by `.github/workflows/deploy.yml`:
+
+- **Every push to `main`** builds and publishes the site.
+- **Every hour** GitHub checks the YouTube channel. A new long video (not Shorts or live streams) is saved to `src/data/youtube-videos.json` and the site is republished, so it gets its own page, a place on the home page and in search. If nothing is new, nothing happens.
+- **Actions tab → “Publish site” → Run workflow** checks YouTube and publishes immediately.
+
+New videos arrive with YouTube's title and description in both languages. To add Bangla text, tags (`overnight`, `summit`, `hiking`, `city`, `film`) or a place, edit the entry in `youtube-videos.json`, or move it into `adventures.ts` for chapters and facts. Put a video ID in `"hide"` to keep it off the site. You can also run the check yourself with `npm run sync:youtube`.
+
+Note: GitHub pauses hourly jobs in a repository with no activity for 60 days; the Actions tab shows a button to turn it back on.
+
+## Deploy (other hosts)
+
+`npm run build` makes a plain static site in `dist/`, which also works on Netlify, Vercel or Cloudflare Pages. The web address comes from the `SITE_URL` and `BASE_PATH` environment variables (see `astro.config.mjs`).

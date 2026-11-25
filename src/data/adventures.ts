@@ -1,6 +1,10 @@
 // Your long-form YouTube videos (from youtube.com/@JummanFootprints), newest first.
-// Add a new video by copying an entry: the page at /adventures/<slug>/ is generated automatically.
+// Two sources, merged below:
+//   1. the hand-written list in this file (with Bangla text, chapters, facts…), and
+//   2. src/data/youtube-videos.json, which the hourly GitHub job fills with new uploads automatically.
+// Every video gets its own page at /adventures/<slug>/.
 import type { Lang } from '../i18n';
+import synced from './youtube-videos.json';
 
 type T = Record<Lang, string>;
 
@@ -10,14 +14,15 @@ export interface Video {
   slug: string;
   youtubeId: string;
   date: string; // upload date, YYYY-MM-DD
-  duration: string;
+  duration?: string; // e.g. '14:29' (YouTube's feed doesn't give it, so auto-added videos have none)
   title: T;
-  place: T;
+  place?: T;
   summary: T;
   tags: string[]; // filter keys: overnight, summit, hiking, city, film
   facts?: { label: T; value: T }[];
   chapters?: Chapter[];
   series?: { id: string; part: number };
+  auto?: boolean; // added automatically from YouTube
 }
 
 export const ytThumb = (id: string, size: 'maxresdefault' | 'hqdefault' = 'maxresdefault') =>
@@ -31,7 +36,7 @@ export const ytWatch = (id: string, t?: string) => {
 const abruzzo: T = { en: 'Abruzzo, Italy', bn: 'আব্রুৎসো, ইতালি' };
 const lazio: T = { en: 'Lazio, Italy', bn: 'লাৎসিও, ইতালি' };
 
-export const videos: Video[] = [
+const handWritten: Video[] = [
   {
     slug: 'monte-tino',
     youtubeId: 'ZQpJaiFlDUI',
@@ -332,6 +337,16 @@ export const videos: Video[] = [
     tags: ['city'],
   },
 ];
+
+// Hand-written entries win; auto-added ones fill in everything new, minus anything listed in "hide".
+const hidden = new Set<string>(synced.hide);
+const handIds = new Set(handWritten.map((v) => v.youtubeId));
+export const videos: Video[] = [
+  ...handWritten,
+  ...(synced.videos as Video[]).filter((v) => !handIds.has(v.youtubeId)),
+]
+  .filter((v) => !hidden.has(v.youtubeId))
+  .sort((a, b) => b.date.localeCompare(a.date));
 
 export const filterTags = ['all', 'overnight', 'summit', 'hiking', 'city', 'film', 'expedition'];
 

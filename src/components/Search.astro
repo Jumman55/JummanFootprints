@@ -1,0 +1,197 @@
+---
+// Site search: opens from the header button, Ctrl/⌘+K or "/". Searches videos, lessons, guides, gear and pages.
+import { getLang, localize } from '../i18n';
+const lang = getLang(Astro.url);
+const t = {
+  en: { open: 'Search the site', placeholder: 'Search adventures, lessons, guides…', close: 'Close search', empty: 'Nothing found. Try another word.', try: 'Try', hint: '↑↓ to move · Enter to open · Esc to close', results: 'Search results', suggestions: ['Monte Tino', 'overnight', 'π', 'drone', 'Rome'] },
+  bn: { open: 'সাইটে খুঁজুন', placeholder: 'অভিযান, পাঠ, গাইড খুঁজুন…', close: 'খোঁজা বন্ধ করুন', empty: 'কিছু পাওয়া যায়নি। অন্য শব্দ দিয়ে চেষ্টা করুন।', try: 'চেষ্টা করুন', hint: '↑↓ সরান · Enter খুলুন · Esc বন্ধ', results: 'খোঁজার ফলাফল', suggestions: ['পাহাড়', 'ক্যাম্প', 'π', 'ড্রোন', 'রোম'] },
+}[lang];
+---
+<button type="button" class="search-btn" data-search-open aria-label={t.open} title={`${t.open} (Ctrl/⌘ K)`}>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4 4" /></svg>
+</button>
+
+<dialog class="search" data-search data-index={localize('/search.json', lang)} data-empty={t.empty} aria-label={t.open}>
+  <div class="box">
+    <div class="bar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4 4" /></svg>
+      <input type="search" placeholder={t.placeholder} aria-label={t.open} autocomplete="off" spellcheck="false" aria-controls="search-results" />
+      <button type="button" class="close" data-search-close aria-label={t.close}>Esc</button>
+    </div>
+    <div class="suggest" data-suggest>
+      <span class="eyebrow">{t.try}</span>
+      {t.suggestions.map((s) => <button type="button" class="tag" data-q={s}>{s}</button>)}
+    </div>
+    <ul id="search-results" class="results" role="listbox" aria-label={t.results}></ul>
+    <p class="empty" data-empty-msg hidden></p>
+    <p class="hint">{t.hint}</p>
+  </div>
+</dialog>
+
+<script>
+  type Entry = { type: string; title: string; alt: string; text: string; url: string; thumb?: string };
+
+  const dlg = document.querySelector<HTMLDialogElement>('[data-search]')!;
+  const input = dlg.querySelector('input')!;
+  const list = dlg.querySelector<HTMLUListElement>('.results')!;
+  const emptyMsg = dlg.querySelector<HTMLElement>('[data-empty-msg]')!;
+  const suggest = dlg.querySelector<HTMLElement>('[data-suggest]')!;
+  let index: Entry[] | null = null;
+  let active = 0;
+  let shown: Entry[] = [];
+
+  // Lowercase, strip Latin accents (é → e), and read Bangla digits as 0-9. Bangla vowel signs are kept.
+  const norm = (s: string) =>
+    s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[০-৯]/g, (d) => String('০১২৩৪৫৬৭৮৯'.indexOf(d)));
+
+  async function load() {
+    if (index) return;
+    try { index = await (await fetch(dlg.dataset.index!)).json(); } catch { index = []; }
+  }
+
+  function search(q: string) {
+    const terms = norm(q).split(/\s+/).filter(Boolean);
+    if (!terms.length || !index) return [];
+    const scored: [number, Entry][] = [];
+    for (const e of index) {
+      const title = norm(e.title), alt = norm(e.alt), text = norm(e.text);
+      let score = 0;
+      for (const term of terms) {
+        let s = 0;
+        if (title.includes(term)) s += title.startsWith(term) ? 15 : 10;
+        if (alt.includes(term)) s += 6;
+        if (text.includes(term)) s += 2;
+        if (!s) { score = 0; break; }
+        score += s;
+      }
+      if (score) scored.push([score, e]);
+    }
+    return scored.sort((a, b) => b[0] - a[0]).slice(0, 10).map(([, e]) => e);
+  }
+
+  // Put the matched words inside <mark>, safely (text nodes only).
+  // Normalise character by character, remembering which original character each normalised one came from
+  // (some letters, like Bangla য়, split into two when normalised, which would otherwise shift the highlight).
+  function normMap(text: string) {
+    let n = '';
+    const from: number[] = [];
+    for (let i = 0; i < text.length; i++) {
+      const c = norm(text[i]);
+      n += c;
+      for (let k = 0; k < c.length; k++) from.push(i);
+    }
+    return { n, from };
+  }
+
+  function highlight(el: HTMLElement, text: string, terms: string[]) {
+    const { n, from } = normMap(text);
+    const marks = new Array(text.length).fill(false);
+    for (const term of terms) {
+      let i = n.indexOf(term);
+      while (i !== -1 && term) { for (let k = i; k < i + term.length && k < from.length; k++) marks[from[k]] = true; i = n.indexOf(term, i + term.length); }
+    }
+    let buf = '', on = false;
+    const flush = () => { if (!buf) return; if (on) { const m = document.createElement('mark'); m.textContent = buf; el.append(m); } else el.append(buf); buf = ''; };
+    for (let i = 0; i < text.length; i++) { if (marks[i] !== on) { flush(); on = marks[i]; } buf += text[i]; }
+    flush();
+  }
+
+  function snippet(text: string, term: string) {
+    const { n, from } = normMap(text);
+    const j = n.indexOf(term);
+    const i = j < 0 ? -1 : from[j];
+    if (i < 0) return text.slice(0, 120) + (text.length > 120 ? '…' : '');
+    const start = Math.max(0, i - 50);
+    return (start ? '…' : '') + text.slice(start, start + 140) + (start + 140 < text.length ? '…' : '');
+  }
+
+  function render() {
+    const q = input.value.trim();
+    const terms = norm(q).split(/\s+/).filter(Boolean);
+    shown = search(q);
+    active = 0;
+    list.replaceChildren();
+    suggest.hidden = !!q;
+    emptyMsg.hidden = !(q && !shown.length);
+    emptyMsg.textContent = dlg.dataset.empty!;
+    shown.forEach((e, i) => {
+      const li = document.createElement('li');
+      li.setAttribute('role', 'option');
+      li.id = `sr-${i}`;
+      const a = document.createElement('a');
+      a.href = e.url;
+      if (e.thumb) { const img = document.createElement('img'); img.src = e.thumb; img.alt = ''; img.loading = 'lazy'; a.append(img); }
+      else { const ph = document.createElement('span'); ph.className = 'ph'; ph.textContent = e.type.slice(0, 1); a.append(ph); }
+      const body = document.createElement('span'); body.className = 'body';
+      const type = document.createElement('span'); type.className = 'type'; type.textContent = e.type;
+      const title = document.createElement('span'); title.className = 'title'; highlight(title, e.title, terms);
+      const snip = document.createElement('span'); snip.className = 'snip'; highlight(snip, snippet(e.text, terms[0] ?? ''), terms);
+      body.append(type, title, snip);
+      a.append(body);
+      li.append(a);
+      li.addEventListener('mousemove', () => setActive(i));
+      list.append(li);
+    });
+    setActive(0);
+  }
+
+  function setActive(i: number) {
+    active = i;
+    list.querySelectorAll('li').forEach((li, k) => li.setAttribute('aria-selected', String(k === i)));
+    if (shown.length) input.setAttribute('aria-activedescendant', `sr-${i}`); else input.removeAttribute('aria-activedescendant');
+    list.querySelector(`#sr-${i}`)?.scrollIntoView({ block: 'nearest' });
+  }
+
+  async function open() {
+    if (!dlg.open) dlg.showModal();
+    input.focus();
+    input.select();
+    await load();
+    if (input.value) render();
+  }
+
+  document.querySelectorAll('[data-search-open]').forEach((b) => b.addEventListener('click', open));
+  dlg.querySelector('[data-search-close]')!.addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); }); // click on the backdrop
+  dlg.querySelectorAll<HTMLButtonElement>('[data-q]').forEach((b) => b.addEventListener('click', async () => { input.value = b.dataset.q!; await load(); render(); input.focus(); }));
+  input.addEventListener('input', async () => { await load(); render(); });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' && shown.length) { e.preventDefault(); setActive((active + 1) % shown.length); }
+    else if (e.key === 'ArrowUp' && shown.length) { e.preventDefault(); setActive((active - 1 + shown.length) % shown.length); }
+    else if (e.key === 'Enter' && shown[active]) { e.preventDefault(); location.href = shown[active].url; }
+  });
+  document.addEventListener('keydown', (e) => {
+    const typing = e.target instanceof HTMLElement && (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName));
+    if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && !typing && !dlg.open)) { e.preventDefault(); open(); }
+  });
+</script>
+
+<style>
+  .search-btn { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; background: transparent; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; color: var(--muted); cursor: pointer; }
+  .search-btn:hover { border-color: var(--amber); color: var(--amber); }
+  .search { width: min(680px, calc(100vw - 32px)); max-height: min(640px, calc(100vh - 80px)); margin: 72px auto auto; padding: 0; border: 1px solid var(--hairline); border-radius: 20px; background: var(--surface); color: var(--text); box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+  .search::backdrop { background: rgba(5,5,4,.7); backdrop-filter: blur(4px); }
+  .box { display: flex; flex-direction: column; max-height: min(640px, calc(100vh - 80px)); }
+  .bar { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--hairline); color: var(--dim); }
+  .bar input { flex: 1; min-width: 0; min-height: 44px; background: transparent; border: 0; color: var(--text); font-family: var(--font-sans); font-size: 18px; outline: none; }
+  .bar input::-webkit-search-cancel-button { display: none; }
+  .close { min-height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--hairline); background: var(--ground); color: var(--dim); font-family: var(--font-mono); font-size: 12px; cursor: pointer; }
+  .suggest { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 16px; }
+  .suggest .tag { cursor: pointer; background: transparent; min-height: 32px; }
+  .suggest .tag:hover { border-color: var(--amber); color: var(--amber); }
+  .results { list-style: none; margin: 0; padding: 8px; overflow-y: auto; }
+  .results:empty { display: none; }
+  .results :global(a) { display: flex; gap: 14px; align-items: center; padding: 10px; border-radius: 12px; color: var(--text); }
+  .results :global(li[aria-selected='true'] a) { background: var(--raised); }
+  .results :global(img), .results :global(.ph) { flex: 0 0 96px; width: 96px; height: 54px; border-radius: 8px; object-fit: cover; background: var(--ground); }
+  .results :global(.ph) { display: flex; align-items: center; justify-content: center; font-family: var(--font-dot); font-weight: 900; font-size: 22px; color: var(--amber); border: 1px solid var(--hairline); }
+  .results :global(.body) { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .results :global(.type) { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); }
+  :global(html[lang='bn']) .results :global(.type) { letter-spacing: 0; font-size: 12px; }
+  .results :global(.title) { font-size: 16px; line-height: 1.3; }
+  .results :global(.snip) { font-size: 13px; line-height: 1.45; color: var(--dim); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .results :global(mark) { background: rgba(242,178,62,.25); color: var(--text); border-radius: 3px; padding: 0 1px; }
+  .empty { margin: 0; padding: 20px 16px; color: var(--muted); }
+  .hint { margin: 0; padding: 10px 16px; border-top: 1px solid var(--hairline); font-family: var(--font-mono); font-size: 11px; color: var(--dim); }
+  @media (max-width: 600px) { .search { margin-top: 16px; } .results :global(img), .results :global(.ph) { flex-basis: 72px; width: 72px; height: 41px; } .hint { display: none; } }
+</style>

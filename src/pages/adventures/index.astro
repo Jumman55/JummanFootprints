@@ -57,10 +57,10 @@ const total = videos.length + 1;
         <a href={localize(`/adventures/${v.slug}/`, lang)} class="row panel" data-tags={v.tags.join(' ')}>
           <div class="row-media">
             <Media label={v.title[lang]} play radius="0px" src={ytThumb(v.youtubeId)} fallback={ytThumb(v.youtubeId, 'hqdefault')} alt="" />
-            <span class="dur">{v.duration}</span>
+            {v.duration && <span class="dur">{v.duration}</span>}
           </div>
           <div class="row-body">
-            <div class="meta">{monthYear(v.date, lang)} · {v.place[lang]}</div>
+            <div class="meta">{monthYear(v.date, lang)}{v.place?.[lang] ? ` · ${v.place[lang]}` : ''}</div>
             <h2 class="row-title">{v.title[lang]}</h2>
             <p class="muted summary">{v.summary[lang]}</p>
             <div class="tags">{v.tags.map((tag) => <span class="tag">{t.tags[tag]}</span>)}</div>
